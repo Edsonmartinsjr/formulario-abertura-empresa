@@ -19,6 +19,22 @@
   .mini-bar { display: inline-block; width: 60px; height: 5px; border-radius: 999px; background: var(--accent-soft); vertical-align: middle; margin-left: 6px; overflow: hidden; }
   .mini-bar i { display: block; height: 100%; background: var(--gold); }
   .login { max-width: 420px; margin: 40px auto; }
+
+  dialog.modal {
+    border: 1px solid var(--line); border-radius: 14px; padding: 0; width: min(460px, calc(100% - 32px));
+    background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  dialog.modal::backdrop { background: rgba(20, 20, 20, .45); backdrop-filter: blur(2px); }
+  dialog.modal[open] { animation: fadein .2s ease; }
+  .modal-body { padding: 22px 22px 8px; }
+  .modal-body .ico { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px;
+    background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); font-size: 22px; font-weight: 600; }
+  .modal-body h2 { font-size: 18px; margin: 0 0 8px; }
+  .modal-body p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  .modal-body .alvo { color: var(--ink); font-weight: 600; user-select: all; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px 20px; }
+  .btn.solid-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .btn.solid-danger:disabled { opacity: .4; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -79,6 +95,23 @@
     <div id="lista"><div class="empty">A carregar…</div></div>
   </section>
 </main>
+
+<dialog class="modal" id="modal-apagar" aria-labelledby="ma-titulo">
+  <form method="dialog" id="ma-form">
+    <div class="modal-body">
+      <div class="ico" aria-hidden="true">!</div>
+      <h2 id="ma-titulo">Apagar formulário</h2>
+      <p>Vai apagar o formulário de <strong id="ma-cliente"></strong>. O link do cliente deixa de funcionar e as respostas são removidas da planilha. <strong>Esta ação não pode ser desfeita.</strong></p>
+      <p>Para confirmar, escreva <span id="ma-tipo">o nome da empresa</span>: <span class="alvo" id="ma-alvo"></span></p>
+      <input id="ma-input" autocomplete="off" spellcheck="false" aria-describedby="ma-alvo">
+      <div class="err" id="ma-err" hidden></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="ma-cancelar">Cancelar</button>
+      <button type="submit" class="btn solid-danger" id="ma-ok" disabled>Apagar definitivamente</button>
+    </div>
+  </form>
+</dialog>
 
 <script>
 (() => {
@@ -178,11 +211,45 @@
     const r = registos.find(x => x.codigo === b.closest('.hist-item').dataset.c); if (!r) return;
     if (b.dataset.act === 'copiar') copiar(linkDe(r.codigo));
     else if (b.dataset.act === 'pdf') gerarPdf(r.dados || {});
-    else if (b.dataset.act === 'apagar') {
-      if (!confirm(`Apagar o formulário de "${r.cliente || 'cliente sem nome'}"? O link deixa de funcionar e as respostas são removidas da planilha.`)) return;
-      b.disabled = true;
-      try { await api('apagar', { chave, codigo: r.codigo }); registos = registos.filter(x => x !== r); render(); toast('Formulário apagado'); }
-      catch (err) { toast(err.message); b.disabled = false; }
+    else if (b.dataset.act === 'apagar') abrirApagar(r);
+  });
+
+  // ---------- janela de apagar (exige escrever o nome da empresa) ----------
+  const modal = $('#modal-apagar');
+  let aApagar = null;
+  const normal = s => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
+  const alvoDe = r => titulo(r.dados) || r.cliente || 'apagar';
+
+  function abrirApagar(r) {
+    aApagar = r;
+    const temEmpresa = !!titulo(r.dados);
+    $('#ma-cliente').textContent = r.cliente || 'cliente sem nome';
+    $('#ma-tipo').textContent = temEmpresa ? 'o nome da empresa' : (r.cliente ? 'o nome do cliente (ainda não há nome de empresa)' : 'a palavra');
+    $('#ma-alvo').textContent = alvoDe(r);
+    $('#ma-input').value = '';
+    $('#ma-err').hidden = true;
+    $('#ma-ok').disabled = true;
+    $('#ma-ok').textContent = 'Apagar definitivamente';
+    modal.showModal();
+    $('#ma-input').focus();
+  }
+  $('#ma-input').addEventListener('input', () => {
+    $('#ma-ok').disabled = normal($('#ma-input').value) !== normal(alvoDe(aApagar));
+  });
+  $('#ma-cancelar').onclick = () => modal.close();
+  modal.addEventListener('click', e => { if (e.target === modal) modal.close(); }); // clique fora
+  $('#ma-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const r = aApagar;
+    if (!r || normal($('#ma-input').value) !== normal(alvoDe(r))) return;
+    const ok = $('#ma-ok'); ok.disabled = true; ok.textContent = 'A apagar…';
+    try {
+      await api('apagar', { chave, codigo: r.codigo });
+      registos = registos.filter(x => x !== r); render();
+      modal.close(); toast('Formulário apagado');
+    } catch (err) {
+      $('#ma-err').textContent = err.message; $('#ma-err').hidden = false;
+      ok.disabled = false; ok.textContent = 'Apagar definitivamente';
     }
   });
 
