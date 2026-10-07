@@ -94,7 +94,7 @@ function tratar_(p) {
     case 'criar': {
       verificarChave_(p.chave);
       return comBloqueio_(() => {
-        const codigo = Utilities.getUuid();
+        const codigo = codigoCurto_();
         const agora = new Date();
         const v = [codigo, texto_(String(p.cliente || '').slice(0, 200)), agora, agora, 'Por preencher', '', '', '', '{}'];
         folha_().appendRow(v);
@@ -134,8 +134,19 @@ function folha_() {
 
 function col_(nome) { return COLUNAS.indexOf(nome); }
 
+/** Código aleatório de 10 caracteres para o link do cliente (~58 bits, sem 0/O/1/l/I). */
+function codigoCurto_() {
+  const letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256,
+    Utilities.getUuid() + Utilities.getUuid() + Date.now());
+  let s = '';
+  for (let i = 0; i < 10; i++) s += letras[(bytes[i] + 256) % letras.length];
+  return s;
+}
+
 function procurar_(codigo) {
-  if (!/^[0-9a-f-]{36}$/i.test(String(codigo || ''))) return null;
+  // aceita códigos curtos (novos) e UUID (links antigos)
+  if (!/^[A-Za-z0-9-]{8,36}$/.test(String(codigo || ''))) return null;
   const f = folha_();
   const n = f.getLastRow() - 1;
   if (n < 1) return null;

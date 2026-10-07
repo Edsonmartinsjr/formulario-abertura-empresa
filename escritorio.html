@@ -94,7 +94,8 @@
 
   try { chave = localStorage.getItem(KEY) || ''; } catch {}
 
-  const linkDe = codigo => new URL('index.html?f=' + encodeURIComponent(codigo), location.href).href;
+  const linkDe = codigo => (DNA.DEMO || !window.LINK_BASE ? new URL('./', location.href).href : window.LINK_BASE)
+    + '?c=' + encodeURIComponent(codigo);
 
   // ---------- entrada ----------
   function mostrarLogin(msg) {

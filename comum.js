@@ -129,7 +129,9 @@
       case 'listar': chave(); return { ok: true, registos: [...lista].reverse() };
       case 'criar': {
         chave();
-        const r = { codigo: crypto.randomUUID(), cliente: p.cliente || '', criado: agora, atualizado: agora,
+        const letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        const codigo = [...crypto.getRandomValues(new Uint8Array(10))].map(b => letras[b % letras.length]).join('');
+        const r = { codigo, cliente: p.cliente || '', criado: agora, atualizado: agora,
           estado: 'Por preencher', passos: [], concluido: false, dados: {} };
         lista.push(r); gravar(); return { ok: true, registo: r };
       }

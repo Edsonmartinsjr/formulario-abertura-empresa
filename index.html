@@ -165,7 +165,8 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const form = $('#f');
   const STEPS = $$('.step', form);
-  const codigo = new URLSearchParams(location.search).get('f');
+  const params = new URLSearchParams(location.search);
+  const codigo = params.get('c') || params.get('f'); // ?f= = links antigos
   let step = 0;
   let doneSteps = new Set();
   let dirty = false;
