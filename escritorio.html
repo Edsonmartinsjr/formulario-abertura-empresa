@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Escritório · Formulários</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="config.js"></script>
+<script src="comum.js"></script>
+<style>
+  .filters { display: flex; gap: 4px; background: var(--accent-soft); padding: 4px; border-radius: 999px; }
+  .filters button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; color: var(--muted); }
+  .filters button.active { background: var(--surface); color: var(--ink); font-weight: 500; }
+  .mini-bar { display: inline-block; width: 60px; height: 5px; border-radius: 999px; background: var(--accent-soft); vertical-align: middle; margin-left: 6px; overflow: hidden; }
+  .mini-bar i { display: block; height: 100%; background: var(--gold); }
+  .login { max-width: 420px; margin: 40px auto; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="logo-slot"></span>
+      <div><b>DANIELA NEVES</b><small>ADVOCACIA · ESCRITÓRIO</small></div>
+    </div>
+    <button class="btn small" id="btn-sair" hidden>Sair</button>
+  </div>
+</header>
+
+<main>
+  <!-- entrada -->
+  <section id="login" class="card login" hidden>
+    <h2>Área do escritório</h2>
+    <p class="hint">Introduza a chave do escritório. Ela fica guardada neste navegador até carregar em "Sair".</p>
+    <form id="login-form">
+      <label for="chave">Chave do escritório</label>
+      <input id="chave" type="password" autocomplete="current-password" required>
+      <div class="err" id="login-err" hidden></div>
+      <div style="margin-top:14px; text-align:right"><button class="btn primary" type="submit">Entrar</button></div>
+    </form>
+  </section>
+
+  <section id="painel" hidden>
+    <h1>Formulários de abertura de empresa</h1>
+    <p class="lead">Crie um link individual para cada cliente. O cliente só vê o próprio formulário; esta lista só é visível aqui.</p>
+
+    <div class="card">
+      <h2>Novo link para cliente</h2>
+      <form id="novo-form" class="hist-tools" style="margin:10px 0 0">
+        <input id="novo-cliente" placeholder="Nome do cliente (ex.: Gutenberg Menezes)" required>
+        <button class="btn primary" type="submit" id="btn-criar">Criar link</button>
+      </form>
+      <div id="novo-res" hidden>
+        <p class="hint" style="margin:12px 0 0">Link criado para <strong id="novo-nome"></strong>. Envie-o ao cliente:</p>
+        <div class="linkbox">
+          <input id="novo-link" readonly>
+          <button class="btn" type="button" id="btn-copiar-novo">Copiar</button>
+          <a class="btn" id="btn-whats" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="btn" id="btn-mail">E-mail</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="hist-tools" style="align-items:center">
+      <input id="search" type="search" placeholder="Pesquisar por cliente, empresa, sócio ou NIF…">
+      <div class="filters" id="filters">
+        <button data-f="todos" class="active">Todos</button>
+        <button data-f="concluido">Concluídos</button>
+        <button data-f="andamento">Em curso</button>
+      </div>
+      <button class="btn" id="btn-atualizar">Atualizar</button>
+    </div>
+    <div id="lista"><div class="empty">A carregar…</div></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const { api, toast, esc, fmtData, titulo, gerarPdf, TOTAL_PASSOS } = DNA;
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const KEY = 'dna-chave-escritorio';
+  let chave = '';
+  let registos = [];
+  let filtro = 'todos';
+
+  DNA.montarCabecalho();
+
+  try { chave = localStorage.getItem(KEY) || ''; } catch {}
+
+  const linkDe = codigo => new URL('index.html?f=' + encodeURIComponent(codigo), location.href).href;
+
+  // ---------- entrada ----------
+  function mostrarLogin(msg) {
+    $('#painel').hidden = true; $('#btn-sair').hidden = true; $('#login').hidden = false;
+    $('#login-err').hidden = !msg; $('#login-err').textContent = msg || '';
+    $('#chave').focus();
+  }
+  $('#login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const tentativa = $('#chave').value.trim();
+    try {
+      await api('verificar', { chave: tentativa });
+      chave = tentativa;
+      try { localStorage.setItem(KEY, chave); } catch {}
+      $('#chave').value = '';
+      entrar();
+    } catch (err) { mostrarLogin(err.message); }
+  });
+  $('#btn-sair').onclick = () => {
+    chave = ''; try { localStorage.removeItem(KEY); } catch {}
+    registos = []; mostrarLogin();
+  };
+
+  function entrar() {
+    $('#login').hidden = true; $('#painel').hidden = false; $('#btn-sair').hidden = false;
+    carregar();
+  }
+
+  // ---------- lista ----------
+  async function carregar() {
+    const btn = $('#btn-atualizar'); btn.disabled = true;
+    try {
+      registos = (await api('listar', { chave })).registos;
+      render();
+    } catch (err) {
+      if (/chave/i.test(err.message)) return mostrarLogin(err.message);
+      $('#lista').innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+    } finally { btn.disabled = false; }
+  }
+
+  function estadoTag(r) {
+    const n = (r.passos || []).length;
+    if (r.concluido) return '<span class="tag ok">Concluído</span>';
+    if (!n) return '<span class="tag new">Por preencher</span>';
+    return `<span class="tag wip">Em preenchimento · ${n}/${TOTAL_PASSOS}</span>`;
+  }
+
+  function render() {
+    const q = $('#search').value.trim().toLowerCase();
+    const itens = registos.filter(r =>
+      (filtro === 'todos' || (filtro === 'concluido' ? r.concluido : !r.concluido)) &&
+      (!q || (r.cliente + ' ' + JSON.stringify(r.dados)).toLowerCase().includes(q)));
+    if (!itens.length) {
+      $('#lista').innerHTML = `<div class="empty">${registos.length ? 'Nenhum resultado.' : 'Ainda não há formulários. Crie o primeiro link acima.'}</div>`;
+      return;
+    }
+    $('#lista').innerHTML = itens.map(r => {
+      const pct = Math.round((r.passos || []).length / TOTAL_PASSOS * 100);
+      const socios = (r.dados?.socios || []).map(s => s.nome).filter(Boolean).join(', ');
+      const empresa = titulo(r.dados);
+      return `<div class="hist-item" data-c="${esc(r.codigo)}">
+        <div class="info">
+          <div class="title">${esc(r.cliente || 'Cliente sem nome')} ${estadoTag(r)}</div>
+          <div class="meta">${empresa ? 'Empresa: ' + esc(empresa) + ' · ' : ''}${socios ? 'Sócios: ' + esc(socios) + ' · ' : ''}
+            Atualizado ${fmtData(r.atualizado)} <span class="mini-bar" title="${pct}%"><i style="width:${pct}%"></i></span></div>
+        </div>
+        <div class="btns">
+          <button class="btn small" data-act="copiar">Copiar link</button>
+          <a class="btn small" href="${esc(linkDe(r.codigo))}" target="_blank" rel="noopener">Abrir</a>
+          <button class="btn small" data-act="pdf" ${empresa ? '' : 'disabled title="Ainda sem respostas"'}>PDF</button>
+          <button class="btn small danger" data-act="apagar">Apagar</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  $('#lista').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-act]'); if (!b) return;
+    const r = registos.find(x => x.codigo === b.closest('.hist-item').dataset.c); if (!r) return;
+    if (b.dataset.act === 'copiar') copiar(linkDe(r.codigo));
+    else if (b.dataset.act === 'pdf') gerarPdf(r.dados || {});
+    else if (b.dataset.act === 'apagar') {
+      if (!confirm(`Apagar o formulário de "${r.cliente || 'cliente sem nome'}"? O link deixa de funcionar e as respostas são removidas da planilha.`)) return;
+      b.disabled = true;
+      try { await api('apagar', { chave, codigo: r.codigo }); registos = registos.filter(x => x !== r); render(); toast('Formulário apagado'); }
+      catch (err) { toast(err.message); b.disabled = false; }
+    }
+  });
+
+  $('#search').oninput = render;
+  $('#filters').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    filtro = b.dataset.f;
+    $$('#filters button').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  });
+  $('#btn-atualizar').onclick = carregar;
+
+  // ---------- novo link ----------
+  $('#novo-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const cliente = $('#novo-cliente').value.trim(); if (!cliente) return;
+    const btn = $('#btn-criar'); btn.disabled = true;
+    try {
+      const { registo } = await api('criar', { chave, cliente });
+      registos.unshift(registo); render();
+      const link = linkDe(registo.codigo);
+      const msg = `Olá ${cliente}! Para darmos início à abertura da sua empresa, preencha por favor o formulário neste link (pode guardar e continuar mais tarde): ${link}`;
+      $('#novo-nome').textContent = cliente;
+      $('#novo-link').value = link;
+      $('#btn-whats').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
+      $('#btn-mail').href = 'mailto:?subject=' + encodeURIComponent('Formulário para abertura da empresa') + '&body=' + encodeURIComponent(msg);
+      $('#novo-res').hidden = false;
+      $('#novo-cliente').value = '';
+    } catch (err) { toast(err.message); }
+    finally { btn.disabled = false; }
+  });
+  $('#btn-copiar-novo').onclick = () => copiar($('#novo-link').value);
+
+  async function copiar(txt) {
+    try { await navigator.clipboard.writeText(txt); toast('Link copiado'); }
+    catch { prompt('Copie o link:', txt); }
+  }
+
+  chave ? entrar() : mostrarLogin();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Abertura de Empresa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilo.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="config.js"></script>
+<script src="comum.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <span class="logo-slot"></span>
+      <div><b>DANIELA NEVES</b><small>ADVOCACIA</small></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h1>Formulário para a abertura da empresa</h1>
+  <p class="lead" id="lead">A carregar…</p>
+
+  <!-- link inválido / erro ao carregar -->
+  <div class="card center-card" id="aviso" hidden>
+    <h2 id="aviso-titulo">Link inválido</h2>
+    <p class="hint" id="aviso-texto">Este endereço não corresponde a nenhum formulário. Use o link que recebeu do escritório.</p>
+    <div class="btns"><button class="btn" id="btn-retry" hidden>Tentar novamente</button></div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="progress" id="progress">
+      <div class="progress-top">
+        <strong id="prog-label">Passo 1 de 6</strong>
+        <span><span class="pct" id="prog-pct">0%</span> concluído</span>
+      </div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="prog-fill"></div></div>
+      <div class="steps" id="steps"></div>
+    </div>
+
+    <form id="f" autocomplete="off" novalidate>
+      <div class="card step" data-title="Nome">
+        <h2><span class="n">1</span> Opções de nome (razão social)</h2>
+        <p class="hint">Informar três opções de nomes para a empresa.</p>
+        <div class="note"><strong>Importante:</strong> as três opções devem ser <strong>totalmente diferentes</strong> umas das outras. Variações do mesmo nome (por exemplo, mudar apenas uma palavra, a ordem ou a terminação) costumam ser recusadas pelo Registo Nacional de Pessoas Coletivas (RNPC), porque são consideradas semelhantes.</div>
+        <div class="grid">
+          <div class="full prefix"><span>A</span><input name="nomeA" placeholder="1.ª opção"></div>
+          <div class="full prefix"><span>B</span><input name="nomeB" placeholder="2.ª opção"></div>
+          <div class="full prefix"><span>C</span><input name="nomeC" placeholder="3.ª opção"></div>
+        </div>
+      </div>
+
+      <div class="card step" data-title="Atividades" hidden>
+        <h2><span class="n">2</span> Atividades principais e secundárias</h2>
+        <p class="hint">Descrever todas as atividades a serem desenvolvidas pela empresa, para que o escritório possa enquadrar nos CAE's, com base na legislação portuguesa.</p>
+        <textarea name="atividades" placeholder="Ex.: remodelação, construção, pintura interior e exterior, eletricidade, canalização…"></textarea>
+      </div>
+
+      <div class="card step" data-title="Capital" hidden>
+        <h2><span class="n">3</span> Valor do capital social</h2>
+        <p class="hint">Este valor poderá ser depositado na conta da empresa até ao último mês do ano fiscal.</p>
+        <div class="grid">
+          <div><label>Capital social (€)</label><input name="capital" type="number" min="0" step="0.01" inputmode="decimal"></div>
+        </div>
+      </div>
+
+      <div class="card step" data-title="Sócios" hidden>
+        <h2><span class="n">4</span> Sócios</h2>
+        <p class="hint">Quantidade de sócios: <strong id="n-socios">0</strong></p>
+        <div id="socios"></div>
+        <div style="margin-top:12px"><button type="button" class="btn" id="add-socio">+ Adicionar sócio</button></div>
+        <div id="quota-check" class="warn" hidden></div>
+      </div>
+
+      <div class="card step" data-title="Contabilista" hidden>
+        <h2><span class="n">5</span> Já possui contabilista?</h2>
+        <div class="radio-row">
+          <label><input type="radio" name="temContabilista" value="sim"> Sim</label>
+          <label><input type="radio" name="temContabilista" value="nao" checked> Não</label>
+        </div>
+        <div class="grid" id="contab-fields" hidden>
+          <div class="full"><label>Nome completo</label><input name="contNome"></div>
+          <div><label>Número da Ordem</label><input name="contOrdem"></div>
+          <div><label>NIF</label><input name="contNif" inputmode="numeric"></div>
+          <div class="full"><label>Morada completa</label><input name="contMorada"></div>
+        </div>
+      </div>
+
+      <div class="card step" data-title="Morada" hidden>
+        <h2><span class="n">6</span> Morada da empresa</h2>
+        <div class="grid">
+          <div class="full"><label>Rua</label><input name="empRua"></div>
+          <div><label>Freguesia</label><input name="empFreguesia"></div>
+          <div><label>Concelho</label><input name="empConcelho"></div>
+          <div><label>Distrito</label><input name="empDistrito"></div>
+          <div><label>Código postal</label><input name="empCP" placeholder="0000-000"></div>
+        </div>
+      </div>
+
+      <div class="err" id="step-err" hidden></div>
+
+      <div class="actions">
+        <span class="status" id="status"></span>
+        <button type="button" class="btn" id="btn-back">← Voltar</button>
+        <button type="submit" class="btn primary" id="btn-next">Guardar e avançar →</button>
+      </div>
+    </form>
+
+    <div class="card center-card" id="done" hidden>
+      <div class="check">✓</div>
+      <h2>Formulário concluído</h2>
+      <p class="hint">Obrigado! As suas respostas foram enviadas ao escritório. Pode guardar uma cópia em PDF ou rever as respostas — se alterar alguma coisa, carregue em "Guardar" novamente.</p>
+      <div class="btns">
+        <button type="button" class="btn primary" id="btn-pdf">Descarregar PDF</button>
+        <button type="button" class="btn" id="btn-review">Rever respostas</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<template id="tpl-socio">
+  <div class="socio">
+    <div class="socio-head">
+      <strong class="socio-title">1.º Sócio(a)</strong>
+      <button type="button" class="btn small danger rm-socio">Remover</button>
+    </div>
+    <div class="grid">
+      <div class="full"><label>Nome</label><input data-f="nome"></div>
+      <div><label>Data de nascimento</label><input data-f="nascimento" type="date"></div>
+      <div><label>Estado civil</label>
+        <select data-f="estadoCivil">
+          <option value="">—</option>
+          <option>Solteiro(a)</option><option>Casado(a)</option><option>União de facto</option>
+          <option>Divorciado(a)</option><option>Viúvo(a)</option><option>Separado(a) judicialmente</option>
+        </select>
+      </div>
+      <div class="conj"><label>Nome do cônjuge</label><input data-f="conjuge"></div>
+      <div class="conj"><label>Regime de bens</label>
+        <input data-f="regime" list="regimes" placeholder="Escolha ou escreva">
+      </div>
+      <div><label>NIF</label><input data-f="nif" inputmode="numeric"></div>
+      <div><label>Valor da quota societária (€)</label><input data-f="quota" type="number" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="full"><label>Morada</label><input data-f="morada"></div>
+    </div>
+  </div>
+</template>
+<datalist id="regimes">
+  <option value="Comunhão de adquiridos">
+  <option value="Comunhão geral de bens">
+  <option value="Separação de bens">
+  <option value="Comunhão parcial de bens">
+</datalist>
+
+<script>
+(() => {
+  const { api, toast, eur, extenso, gerarPdf } = DNA;
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const form = $('#f');
+  const STEPS = $$('.step', form);
+  const codigo = new URLSearchParams(location.search).get('f');
+  let step = 0;
+  let doneSteps = new Set();
+  let dirty = false;
+  let saving = false;
+
+  DNA.montarCabecalho();
+
+  // ---------- carregar o formulário deste cliente ----------
+  function aviso(titulo, texto, retry = false) {
+    $('#app').hidden = true; $('#aviso').hidden = false;
+    $('#aviso-titulo').textContent = titulo; $('#aviso-texto').textContent = texto;
+    $('#btn-retry').hidden = !retry;
+    $('#lead').textContent = '';
+  }
+  async function carregar() {
+    if (!codigo) {
+      aviso('Link incompleto', 'Para preencher o formulário, use o link individual que recebeu do escritório Daniela Neves Advocacia.');
+      return;
+    }
+    $('#aviso').hidden = true; $('#lead').textContent = 'A carregar…';
+    try {
+      const { registo } = await api('obter', { codigo });
+      fill(registo.dados || {});
+      doneSteps = new Set(registo.passos || []);
+      $('#lead').textContent = registo.cliente ? `Formulário de ${registo.cliente}` : 'Preencha cada passo e carregue em "Guardar e avançar".';
+      $('#app').hidden = false;
+      const next = STEPS.findIndex((_, i) => !doneSteps.has(i));
+      next === -1 ? showDone() : goStep(next);
+    } catch (e) {
+      const invalido = /inválido/i.test(e.message);
+      aviso(invalido ? 'Link inválido' : 'Não foi possível carregar', e.message, !invalido);
+    }
+  }
+  $('#btn-retry').onclick = carregar;
+
+  // ---------- passos e progresso ----------
+  function renderSteps() {
+    const doneVisible = !$('#done').hidden;
+    $('#steps').innerHTML = STEPS.map((s, i) => `
+      <button type="button" data-i="${i}" class="${doneSteps.has(i) ? 'done' : ''} ${i === step && !doneVisible ? 'current' : ''}">
+        <span class="dot">${doneSteps.has(i) ? '✓' : i + 1}</span><span class="lbl">${s.dataset.title}</span>
+      </button>`).join('');
+    const pct = Math.round(doneSteps.size / STEPS.length * 100);
+    $('#prog-fill').style.width = pct + '%';
+    $('#prog-pct').textContent = pct + '%';
+    $('.bar').setAttribute('aria-valuenow', pct);
+    $('#prog-label').textContent = doneVisible
+      ? 'Todas as etapas concluídas'
+      : `Passo ${step + 1} de ${STEPS.length} · ${STEPS[step].dataset.title}`;
+  }
+  function goStep(i) {
+    step = Math.max(0, Math.min(STEPS.length - 1, i));
+    STEPS.forEach((s, j) => s.hidden = j !== step);
+    form.hidden = false; $('#done').hidden = true;
+    $('#step-err').hidden = true;
+    $('#btn-back').style.visibility = step === 0 ? 'hidden' : 'visible';
+    $('#btn-next').textContent = step === STEPS.length - 1 ? 'Guardar e concluir ✓' : 'Guardar e avançar →';
+    renderSteps();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('input, textarea, select', STEPS[step])?.focus({ preventScroll: true });
+  }
+  function showDone() {
+    form.hidden = true; $('#done').hidden = false;
+    renderSteps();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function validateStep() {
+    if (step === 0 && !form.nomeA.value.trim()) return 'Indique pelo menos a 1.ª opção de nome (A).';
+    if (step === 3 && !$$('#socios [data-f="nome"]').some(i => i.value.trim())) return 'Indique o nome de pelo menos um sócio.';
+    return '';
+  }
+  $('#steps').addEventListener('click', e => {
+    const b = e.target.closest('button[data-i]'); if (b) goStep(+b.dataset.i);
+  });
+
+  // ---------- sócios ----------
+  function addSocio(data = {}) {
+    const node = $('#tpl-socio').content.firstElementChild.cloneNode(true);
+    $$('[data-f]', node).forEach(i => { i.value = data[i.dataset.f] ?? ''; });
+    $('.rm-socio', node).onclick = () => { node.remove(); renumber(); markDirty(); };
+    $('[data-f="estadoCivil"]', node).addEventListener('change', () => toggleConj(node));
+    $('#socios').append(node);
+    toggleConj(node);
+    renumber();
+  }
+  function toggleConj(node) {
+    const show = /Casado|União/.test($('[data-f="estadoCivil"]', node).value);
+    $$('.conj', node).forEach(c => c.hidden = !show);
+  }
+  function renumber() {
+    const s = $$('#socios .socio');
+    s.forEach((n, i) => $('.socio-title', n).textContent = `${i + 1}.º Sócio(a)`);
+    $('#n-socios').textContent = String(s.length).padStart(2, '0') + ' (' + extenso(s.length) + ')';
+    checkQuotas();
+  }
+  function checkQuotas() {
+    const box = $('#quota-check');
+    const cap = parseFloat(form.capital.value);
+    const quotas = $$('#socios [data-f="quota"]').map(i => parseFloat(i.value)).filter(v => !isNaN(v));
+    if (isNaN(cap) || !quotas.length) { box.hidden = true; return; }
+    const sum = quotas.reduce((a, b) => a + b, 0);
+    box.hidden = false;
+    if (Math.abs(sum - cap) < 0.005) {
+      box.className = 'warn good'; box.textContent = `Soma das quotas (${eur(sum)}) corresponde ao capital social.`;
+    } else {
+      box.className = 'warn bad'; box.textContent = `Atenção: a soma das quotas (${eur(sum)}) difere do capital social (${eur(cap)}).`;
+    }
+  }
+
+  // ---------- ler / preencher ----------
+  function read() {
+    const d = {};
+    $$('input[name], textarea[name], select[name]', form).forEach(el => {
+      if (el.type === 'radio') { if (el.checked) d[el.name] = el.value; }
+      else d[el.name] = el.value.trim();
+    });
+    d.socios = $$('#socios .socio').map(n => {
+      const o = {}; $$('[data-f]', n).forEach(i => o[i.dataset.f] = i.value.trim()); return o;
+    });
+    return d;
+  }
+  function fill(d) {
+    form.reset();
+    $('#socios').innerHTML = '';
+    $$('input[name], textarea[name], select[name]', form).forEach(el => {
+      if (el.type === 'radio') el.checked = (d[el.name] ?? 'nao') === el.value;
+      else el.value = d[el.name] ?? '';
+    });
+    (d.socios?.length ? d.socios : [{}, {}]).forEach(s => addSocio(s));
+    toggleContab();
+    checkQuotas();
+  }
+  function toggleContab() { $('#contab-fields').hidden = form.temContabilista.value !== 'sim'; }
+  function markDirty() { dirty = true; status('Alterações não guardadas'); }
+  function status(t) { $('#status').textContent = t; }
+
+  // ---------- guardar ----------
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (saving) return;
+    const msg = validateStep();
+    if (msg) { $('#step-err').textContent = msg; $('#step-err').hidden = false; return; }
+    const passos = new Set(doneSteps).add(step);
+    const btn = $('#btn-next'), label = btn.textContent;
+    saving = true; btn.disabled = true; btn.textContent = 'A guardar…';
+    try {
+      await api('guardar', { codigo, dados: read(), passos: [...passos] });
+      doneSteps = passos; dirty = false;
+      status('Guardado às ' + new Date().toLocaleTimeString('pt-PT', { timeStyle: 'short' }));
+      if (step < STEPS.length - 1) { toast('Respostas guardadas'); goStep(step + 1); }
+      else {
+        const next = STEPS.findIndex((_, i) => !doneSteps.has(i));
+        if (next === -1) { toast('Formulário enviado ao escritório'); showDone(); }
+        else { toast('Falta concluir: ' + STEPS[next].dataset.title); goStep(next); }
+      }
+    } catch (err) {
+      $('#step-err').textContent = 'Não foi possível guardar: ' + err.message;
+      $('#step-err').hidden = false;
+    } finally {
+      saving = false; btn.disabled = false;
+      if (btn.textContent === 'A guardar…') btn.textContent = label;
+    }
+  });
+
+  form.addEventListener('input', e => {
+    markDirty();
+    if (e.target.name === 'capital' || e.target.dataset.f === 'quota') checkQuotas();
+  });
+  form.addEventListener('change', e => { if (e.target.name === 'temContabilista') toggleContab(); });
+  $('#btn-back').onclick = () => goStep(step - 1);
+  $('#add-socio').onclick = () => { addSocio(); markDirty(); };
+  $('#btn-review').onclick = () => goStep(0);
+  $('#btn-pdf').onclick = () => gerarPdf(read());
+  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  carregar();
+})();
+</script>
+</body>
+</html>
