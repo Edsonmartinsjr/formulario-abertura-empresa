@@ -34,6 +34,9 @@ listar, criar e apagar exige a chave do escritório.
 
 > Se alterar o `Codigo.gs` mais tarde: **Implementar → Gerir implementações → ✏️ → Versão: Nova versão**
 > (assim o URL mantém-se). Para trocar a chave: execute a função `trocarChave`.
+>
+> Google Doc automático: quando o cliente conclui, o script cria/atualiza um Google Doc na pasta
+> "Formulários abertura empresa – Documentos" (ao lado da planilha). Na primeira vez execute `autorizarDocumentos`.
 
 ## 2. Publicação
 

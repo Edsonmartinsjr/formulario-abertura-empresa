@@ -10,8 +10,9 @@
  */
 
 const FOLHA = 'Formularios';
-const COLUNAS = ['codigo', 'cliente', 'criado', 'atualizado', 'estado', 'passos', 'empresa', 'socios', 'dados'];
+const COLUNAS = ['codigo', 'cliente', 'criado', 'atualizado', 'estado', 'passos', 'empresa', 'socios', 'dados', 'documento'];
 const TOTAL_PASSOS = 6;
+const NOME_PASTA = 'Formulários abertura empresa – Documentos';
 
 // ---------- configuração (executar à mão no editor) ----------
 
@@ -31,6 +32,28 @@ function trocarChave() {
   const chave = novaChave_();
   PropertiesService.getScriptProperties().setProperty('CHAVE_ESCRITORIO', chave);
   Logger.log('Nova chave do escritório: ' + chave);
+}
+
+/**
+ * Executar uma vez depois de atualizar o código: dá ao script permissão para criar
+ * Google Docs e cria os documentos dos formulários já concluídos.
+ */
+function autorizarDocumentos() {
+  const pasta = pasta_();
+  const f = folha_();
+  const n = f.getLastRow() - 1;
+  let criados = 0;
+  for (let i = 0; i < n; i++) {
+    const intervalo = f.getRange(i + 2, 1, 1, COLUNAS.length);
+    const v = intervalo.getValues()[0];
+    if (v[col_('codigo')] && v[col_('estado')] === 'Concluído' && !v[col_('documento')]) {
+      v[col_('documento')] = documento_(v);
+      intervalo.setValues([v]);
+      criados++;
+    }
+  }
+  Logger.log('Pasta dos documentos: ' + pasta.getUrl());
+  Logger.log('Documentos criados agora: ' + criados);
 }
 
 function novaChave_() {
@@ -78,6 +101,11 @@ function tratar_(p) {
         v[col_('empresa')] = texto_(dados.nomeA || '');
         v[col_('socios')] = texto_((dados.socios || []).map(s => s && s.nome).filter(Boolean).join('; '));
         v[col_('dados')] = JSON.stringify(dados);
+        if (concluido) {
+          // Cria (ou atualiza) o Google Doc; uma falha aqui não impede o cliente de guardar.
+          try { v[col_('documento')] = documento_(v); }
+          catch (err) { console.error('Erro ao criar o documento: ' + err); }
+        }
         linha.intervalo.setValues([v]);
         return { ok: true, registo: publico_(v) };
       });
@@ -89,14 +117,14 @@ function tratar_(p) {
       const f = folha_();
       const n = f.getLastRow() - 1;
       const linhas = n > 0 ? f.getRange(2, 1, n, COLUNAS.length).getValues() : [];
-      return { ok: true, registos: linhas.filter(l => l[0]).map(publico_).reverse() };
+      return { ok: true, registos: linhas.filter(l => l[0]).map(l => publico_(l, true)).reverse() };
     }
     case 'criar': {
       verificarChave_(p.chave);
       return comBloqueio_(() => {
         const codigo = codigoCurto_();
         const agora = new Date();
-        const v = [codigo, texto_(String(p.cliente || '').slice(0, 200)), agora, agora, 'Por preencher', '', '', '', '{}'];
+        const v = [codigo, texto_(String(p.cliente || '').slice(0, 200)), agora, agora, 'Por preencher', '', '', '', '{}', ''];
         folha_().appendRow(v);
         return { ok: true, registo: publico_(v) };
       });
@@ -129,8 +157,138 @@ function folha_() {
     f.setFrozenRows(1);
     f.getRange(1, 1, 1, COLUNAS.length).setFontWeight('bold');
   }
+  // planilhas criadas antes da coluna "documento"
+  const ultimo = f.getRange(1, COLUNAS.length);
+  if (!ultimo.getValue()) ultimo.setValue(COLUNAS[COLUNAS.length - 1]).setFontWeight('bold');
   return f;
 }
+
+// ---------- Google Doc ----------
+
+function pasta_() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('PASTA_DOCS');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) {} }
+  const planilha = DriveApp.getFileById(SpreadsheetApp.getActive().getId());
+  const pais = planilha.getParents();
+  const pasta = (pais.hasNext() ? pais.next() : DriveApp.getRootFolder()).createFolder(NOME_PASTA);
+  props.setProperty('PASTA_DOCS', pasta.getId());
+  return pasta;
+}
+
+/** Cria ou atualiza o Google Doc do formulário e devolve o URL. */
+function documento_(v) {
+  let d = {};
+  try { d = JSON.parse(v[col_('dados')] || '{}'); } catch (e) {}
+  const cliente = String(v[col_('cliente')] || '');
+  const nome = 'Abertura de empresa – ' + (cliente || d.nomeA || 'cliente') + (d.nomeA && cliente ? ' (' + d.nomeA + ')' : '');
+
+  let doc = null;
+  const id = (String(v[col_('documento')] || '').match(/\/d\/([\w-]+)/) || [])[1];
+  if (id) { try { doc = DocumentApp.openById(id); doc.setName(nome); } catch (e) { doc = null; } }
+  if (!doc) {
+    doc = DocumentApp.create(nome);
+    DriveApp.getFileById(doc.getId()).moveTo(pasta_());
+  }
+
+  const P = DocumentApp.ParagraphHeading;
+  const A = DocumentApp.HorizontalAlignment;
+  const body = doc.getBody();
+  body.clear();
+  body.setMarginTop(50).setMarginBottom(50).setMarginLeft(60).setMarginRight(60);
+
+  const linha = (texto, opts) => {
+    const p = body.appendParagraph(texto || '');
+    p.setHeading(P.NORMAL);
+    p.editAsText().setFontFamily('Times New Roman').setFontSize(11).setBold(false).setUnderline(false);
+    if (opts && opts.centro) p.setAlignment(A.CENTER);
+    return p;
+  };
+  const secao = texto => { const p = linha(texto); p.editAsText().setBold(true); p.setSpacingBefore(12); return p; };
+  const campo = (rotulo, valor) => {
+    const p = linha('');
+    p.appendText(rotulo + ' ').setBold(true);
+    p.appendText(valor ? String(valor) : '—').setBold(false).setFontFamily('Arial').setFontSize(10.5);
+    return p;
+  };
+
+  // cabeçalho
+  const marca = linha('DANIELA NEVES', { centro: true });
+  marca.editAsText().setFontFamily('Montserrat').setFontSize(20);
+  const sub = linha('ADVOCACIA', { centro: true });
+  sub.editAsText().setFontFamily('Montserrat').setFontSize(9);
+  body.appendHorizontalRule();
+  const tit = linha('FORMULÁRIO PARA A ABERTURA DA EMPRESA', { centro: true });
+  tit.editAsText().setBold(true).setUnderline(true).setFontSize(12.5);
+  tit.setSpacingBefore(6).setSpacingAfter(6);
+  if (cliente) campo('Cliente:', cliente);
+
+  secao('1-) Três opções de nomes para a empresa (razão social):');
+  campo('A-', d.nomeA); campo('B-', d.nomeB); campo('C-', d.nomeC);
+
+  secao('2-) Atividades principais e secundárias da empresa:');
+  const ativ = linha(d.atividades || '—');
+  ativ.editAsText().setFontFamily('Arial').setFontSize(10.5);
+
+  secao('3-) Valor do Capital Social:');
+  campo('Capital social:', eur_(d.capital));
+
+  const socios = (d.socios || []).filter(s => s && Object.keys(s).some(k => s[k]));
+  secao('4-) Quantidade de sócios: ' + ('0' + socios.length).slice(-2) + ' (' + extenso_(socios.length) + ')');
+  socios.forEach((s, i) => {
+    secao((i + 1) + '.º Sócio(a):');
+    campo('Nome:', s.nome);
+    campo('Data de nascimento:', data_(s.nascimento));
+    campo('Estado civil:', s.estadoCivil);
+    campo('Nome do cônjuge:', s.conjuge);
+    campo('Regime de bens:', s.regime);
+    campo('NIF:', s.nif);
+    campo('Morada:', s.morada);
+    campo('Valor da quota societária:', eur_(s.quota));
+  });
+
+  const temC = d.temContabilista === 'sim';
+  secao('5-) Já possui contabilista? ' + (temC ? 'Sim' : 'Não'));
+  if (temC) {
+    campo('Nome completo:', d.contNome); campo('Número da Ordem:', d.contOrdem);
+    campo('NIF:', d.contNif); campo('Morada completa:', d.contMorada);
+  }
+
+  secao('6-) Morada da empresa:');
+  campo('Rua:', d.empRua); campo('Freguesia:', d.empFreguesia); campo('Concelho:', d.empConcelho);
+  campo('Distrito:', d.empDistrito); campo('Código Postal:', d.empCP);
+
+  const rod = linha('Preenchido pelo cliente em ' + Utilities.formatDate(new Date(), 'Europe/Lisbon', 'dd/MM/yyyy HH:mm'));
+  rod.setSpacingBefore(18).setAlignment(A.RIGHT);
+  rod.editAsText().setFontFamily('Arial').setFontSize(8).setForegroundColor('#666666');
+
+  // rodapé com os contactos do escritório
+  const footer = doc.getFooter() || doc.addFooter();
+  footer.clear();
+  const fp = footer.appendParagraph(
+    'Avenida Dom João II, 35B, sala 7A, Parque das Nações, Lisboa, Portugal · 1990-083 · CP 47953L · +351 911011282\n' +
+    'Alameda Armenio Mendes, nº 66, 6º andar, sala 610, Edifício Corporate, Santos, São Paulo · 11035-260 · OAB/SP 282.534 · +55 (13) 98219-7717\n' +
+    'danielaneves-47953L@adv.oa.pt');
+  fp.setAlignment(A.CENTER);
+  fp.editAsText().setFontFamily('Arial').setFontSize(7).setBold(true);
+
+  // remove o parágrafo vazio que fica no início após body.clear()
+  const primeiro = body.getChild(0);
+  if (body.getNumChildren() > 1 && primeiro.getType() === DocumentApp.ElementType.PARAGRAPH && !primeiro.asParagraph().getText()) {
+    primeiro.removeFromParent();
+  }
+
+  doc.saveAndClose();
+  return doc.getUrl();
+}
+
+function eur_(v) {
+  if (v === '' || v == null || isNaN(parseFloat(v))) return '';
+  const [int, dec] = parseFloat(v).toFixed(2).split('.');
+  return int.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ',' + dec + ' €';
+}
+function data_(v) { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? m[3] + '/' + m[2] + '/' + m[1] : (v || ''); }
+function extenso_(n) { return ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez'][n] || String(n); }
 
 function col_(nome) { return COLUNAS.indexOf(nome); }
 
@@ -161,7 +319,7 @@ function procurar_(codigo) {
   return null;
 }
 
-function publico_(v) {
+function publico_(v, escritorio) {
   let dados = {};
   try { dados = JSON.parse(v[col_('dados')] || '{}'); } catch (e) {}
   const passos = String(v[col_('passos')] || '').split(',').filter(s => s !== '').map(Number);
@@ -173,7 +331,8 @@ function publico_(v) {
     estado: v[col_('estado')],
     passos: passos,
     concluido: passos.length === TOTAL_PASSOS,
-    dados: dados
+    dados: dados,
+    documento: escritorio ? String(v[col_('documento')] || '') : undefined
   };
 }
 

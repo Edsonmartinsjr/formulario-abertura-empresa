@@ -165,6 +165,7 @@
         <div class="btns">
           <button class="btn small" data-act="copiar">Copiar link</button>
           <a class="btn small" href="${esc(linkDe(r.codigo))}" target="_blank" rel="noopener">Abrir</a>
+          ${r.documento ? `<a class="btn small" href="${esc(r.documento)}" target="_blank" rel="noopener" title="Google Doc com as respostas">Documento</a>` : ''}
           <button class="btn small" data-act="pdf" ${empresa ? '' : 'disabled title="Ainda sem respostas"'}>PDF</button>
           <button class="btn small danger" data-act="apagar">Apagar</button>
         </div>
