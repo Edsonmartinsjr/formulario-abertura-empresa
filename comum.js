@@ -1,11 +1,17 @@
 // Código partilhado entre a página do cliente (index.html) e a do escritório (escritorio.html).
 (() => {
   const DEMO = !window.SCRIPT_URL;
+
+  // Tema de cores: config.js (window.TEMA) ou ?tema=laranja|dourado para pré-visualizar.
+  try {
+    const t = new URLSearchParams(location.search).get('tema') || window.TEMA;
+    if (t && t !== 'laranja') document.documentElement.dataset.tema = t;
+  } catch {}
   const TOTAL_PASSOS = 6;
 
   // ---------- logótipo DN (vetorial) ----------
   // O espaço à volta da diagonal é desenhado com a cor do fundo (`gap`).
-  const logo = (gap = 'var(--surface)') => `<svg class="logo" viewBox="70 30 440 375" fill="none" stroke="currentColor" stroke-width="22" aria-label="Daniela Neves Advocacia">
+  const logo = (gap = 'var(--header-bg)') => `<svg class="logo" viewBox="70 30 440 375" fill="none" stroke="currentColor" stroke-width="22" aria-label="Daniela Neves Advocacia">
     <path d="M195 355 V 66 H 268 A 132 144.5 0 0 1 268 355 Z"/>
     <line x1="95" y1="55" x2="485" y2="385" stroke="${gap}" stroke-width="64"/>
     <path d="M95 396 V 55 L 485 385 V 44" stroke-linejoin="miter"/>
@@ -131,9 +137,14 @@
         chave();
         const letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         const codigo = [...crypto.getRandomValues(new Uint8Array(10))].map(b => letras[b % letras.length]).join('');
-        const r = { codigo, cliente: p.cliente || '', criado: agora, atualizado: agora,
-          estado: 'Por preencher', passos: [], concluido: false, dados: {} };
-        lista.push(r); gravar(); return { ok: true, registo: r };
+        const r = { codigo, cliente: p.cliente || '', email: p.email || '', criado: agora, atualizado: agora,
+          estado: 'Por preencher', passos: [], concluido: false, dados: {}, documento: '' };
+        lista.push(r); gravar(); return { ok: true, registo: r, emailEnviado: !!p.email };
+      }
+      case 'reenviar': {
+        chave(); const r = achar();
+        if (p.email) { r.email = p.email; gravar(); }
+        return { ok: true, registo: r };
       }
       case 'apagar': chave(); lista = lista.filter(x => x.codigo !== p.codigo); gravar(); return { ok: true };
     }

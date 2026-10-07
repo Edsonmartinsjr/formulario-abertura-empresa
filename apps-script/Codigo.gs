@@ -10,9 +10,16 @@
  */
 
 const FOLHA = 'Formularios';
-const COLUNAS = ['codigo', 'cliente', 'criado', 'atualizado', 'estado', 'passos', 'empresa', 'socios', 'dados', 'documento'];
+const COLUNAS = ['codigo', 'cliente', 'criado', 'atualizado', 'estado', 'passos', 'empresa', 'socios', 'dados', 'documento', 'email'];
 const TOTAL_PASSOS = 6;
 const NOME_PASTA = 'Formulários abertura empresa – Documentos';
+
+// ---------- e-mails ----------
+const SITE = 'https://form.danielaneves.adv.br/';          // endereço do formulário
+const REMETENTE = 'Daniela Neves Advocacia';                // nome que aparece nos e-mails
+// Quem recebe o aviso quando um cliente conclui (vários: separar por vírgula).
+// Vazio = o e-mail da conta Google dona deste script.
+const EMAIL_AVISOS = '';
 
 // ---------- configuração (executar à mão no editor) ----------
 
@@ -36,8 +43,14 @@ function trocarChave() {
 
 /**
  * Executar uma vez depois de atualizar o código: dá ao script permissão para criar
- * Google Docs e cria os documentos dos formulários já concluídos.
+ * Google Docs e enviar e-mails, e cria os documentos dos formulários já concluídos.
  */
+function autorizar() {
+  Logger.log('E-mails que ainda pode enviar hoje: ' + MailApp.getRemainingDailyQuota());
+  Logger.log('Avisos de conclusão vão para: ' + emailAvisos_());
+  autorizarDocumentos();
+}
+
 function autorizarDocumentos() {
   const pasta = pasta_();
   const f = folha_();
@@ -95,6 +108,7 @@ function tratar_(p) {
         const unicos = [...new Set(passos)].sort();
         const concluido = unicos.length === TOTAL_PASSOS;
         const v = linha.valores;
+        const jaConcluido = v[col_('estado')] === 'Concluído';
         v[col_('atualizado')] = new Date();
         v[col_('estado')] = concluido ? 'Concluído' : 'Em preenchimento';
         v[col_('passos')] = unicos.join(',');
@@ -107,6 +121,11 @@ function tratar_(p) {
           catch (err) { console.error('Erro ao criar o documento: ' + err); }
         }
         linha.intervalo.setValues([v]);
+        // Aviso ao escritório só na primeira conclusão (não a cada correção posterior).
+        if (concluido && !jaConcluido) {
+          try { avisarEscritorio_(v); }
+          catch (err) { console.error('Erro ao enviar o aviso: ' + err); }
+        }
         return { ok: true, registo: publico_(v) };
       });
     }
@@ -121,13 +140,32 @@ function tratar_(p) {
     }
     case 'criar': {
       verificarChave_(p.chave);
-      return comBloqueio_(() => {
-        const codigo = codigoCurto_();
+      const email = String(p.email || '').trim();
+      if (email && !emailValido_(email)) throw new Error('E-mail do cliente inválido.');
+      const v = comBloqueio_(() => {
         const agora = new Date();
-        const v = [codigo, texto_(String(p.cliente || '').slice(0, 200)), agora, agora, 'Por preencher', '', '', '', '{}', ''];
-        folha_().appendRow(v);
-        return { ok: true, registo: publico_(v) };
+        const linha = [codigoCurto_(), texto_(String(p.cliente || '').slice(0, 200)), agora, agora,
+          'Por preencher', '', '', '', '{}', '', texto_(email)];
+        folha_().appendRow(linha);
+        return linha;
       });
+      let emailEnviado = false, erroEmail = '';
+      if (email) {
+        try { enviarLink_(v); emailEnviado = true; }
+        catch (err) { erroEmail = String(err && err.message || err); }
+      }
+      return { ok: true, registo: publico_(v, true), emailEnviado, erroEmail };
+    }
+    case 'reenviar': {
+      verificarChave_(p.chave);
+      const linha = procurar_(p.codigo);
+      if (!linha) throw new Error('Formulário não encontrado.');
+      const v = linha.valores;
+      const email = String(p.email || v[col_('email')] || '').trim();
+      if (!emailValido_(email)) throw new Error('Indique um e-mail válido para o cliente.');
+      if (email !== v[col_('email')]) { v[col_('email')] = texto_(email); linha.intervalo.setValues([v]); }
+      enviarLink_(v);
+      return { ok: true, registo: publico_(v, true) };
     }
     case 'apagar': {
       verificarChave_(p.chave);
@@ -157,10 +195,87 @@ function folha_() {
     f.setFrozenRows(1);
     f.getRange(1, 1, 1, COLUNAS.length).setFontWeight('bold');
   }
-  // planilhas criadas antes da coluna "documento"
-  const ultimo = f.getRange(1, COLUNAS.length);
-  if (!ultimo.getValue()) ultimo.setValue(COLUNAS[COLUNAS.length - 1]).setFontWeight('bold');
+  // planilhas criadas antes das colunas mais recentes ("documento", "email")
+  const cab = f.getRange(1, 1, 1, COLUNAS.length);
+  const nomes = cab.getValues()[0];
+  if (nomes.some((n, i) => n !== COLUNAS[i])) cab.setValues([COLUNAS]).setFontWeight('bold');
   return f;
+}
+
+// ---------- e-mails ----------
+
+function emailValido_(s) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || '')); }
+
+function emailAvisos_() {
+  return EMAIL_AVISOS || Session.getEffectiveUser().getEmail();
+}
+
+const esc_ = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/** Moldura HTML comum aos e-mails (preto, branco, cinza e laranja). */
+function moldura_(conteudo) {
+  return '<div style="background:#f2f2f1;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;color:#111">' +
+    '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e2e0dd">' +
+    '<div style="background:#111;padding:18px 24px;color:#fff;letter-spacing:4px;font-size:16px">DANIELA NEVES' +
+    '<div style="letter-spacing:4px;font-size:9px;color:#a6a19b;margin-top:2px">ADVOCACIA</div></div>' +
+    '<div style="height:4px;background:#c4561a"></div>' +
+    '<div style="padding:24px;font-size:15px;line-height:1.55">' + conteudo + '</div>' +
+    '<div style="padding:14px 24px;background:#f7f7f6;color:#77736e;font-size:11px;line-height:1.5">' +
+    'Daniela Neves Advocacia · Lisboa · Santos/SP<br>danielaneves-47953L@adv.oa.pt · +351 911011282</div>' +
+    '</div></div>';
+}
+function botao_(url, texto) {
+  return '<p style="margin:22px 0"><a href="' + esc_(url) + '" style="background:#c4561a;color:#fff;text-decoration:none;' +
+    'padding:12px 22px;border-radius:8px;font-weight:bold;display:inline-block">' + esc_(texto) + '</a></p>';
+}
+
+/** Envia ao cliente o link individual do formulário. */
+function enviarLink_(v) {
+  const email = String(v[col_('email')] || '');
+  const cliente = String(v[col_('cliente')] || '').replace(/^'/, '');
+  const link = SITE + '?c=' + v[col_('codigo')];
+  const html = moldura_(
+    '<p>Olá' + (cliente ? ' ' + esc_(cliente) : '') + ',</p>' +
+    '<p>Para darmos início à abertura da sua empresa, pedimos que preencha o formulário no link abaixo. ' +
+    'Pode guardar e continuar mais tarde com o mesmo link.</p>' +
+    botao_(link, 'Preencher formulário') +
+    '<p style="font-size:13px;color:#77736e">Se o botão não funcionar, copie este endereço para o navegador:<br>' +
+    '<a href="' + esc_(link) + '" style="color:#c4561a">' + esc_(link) + '</a></p>' +
+    '<p>Qualquer dúvida, basta responder a este e-mail.</p><p>Com os melhores cumprimentos,<br>Daniela Neves Advocacia</p>');
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Formulário para a abertura da sua empresa',
+    htmlBody: html,
+    body: 'Olá ' + cliente + ',\n\nPreencha o formulário para a abertura da sua empresa neste link:\n' + link +
+      '\n\nPode guardar e continuar mais tarde com o mesmo link.\n\nDaniela Neves Advocacia',
+    name: REMETENTE
+  });
+}
+
+/** Avisa o escritório de que um cliente concluiu o formulário. */
+function avisarEscritorio_(v) {
+  let d = {};
+  try { d = JSON.parse(v[col_('dados')] || '{}'); } catch (e) {}
+  const cliente = String(v[col_('cliente')] || '').replace(/^'/, '') || 'Cliente sem nome';
+  const doc = String(v[col_('documento')] || '');
+  const socios = (d.socios || []).map(s => s && s.nome).filter(Boolean);
+  const html = moldura_(
+    '<p style="margin-top:0"><strong>' + esc_(cliente) + '</strong> concluiu o formulário de abertura de empresa.</p>' +
+    '<table style="font-size:14px;border-collapse:collapse">' +
+    '<tr><td style="color:#77736e;padding:3px 12px 3px 0">Nome (opção A)</td><td>' + esc_(d.nomeA || '—') + '</td></tr>' +
+    '<tr><td style="color:#77736e;padding:3px 12px 3px 0">Sócios</td><td>' + esc_(socios.join(', ') || '—') + '</td></tr>' +
+    '<tr><td style="color:#77736e;padding:3px 12px 3px 0">Capital social</td><td>' + esc_(eur_(d.capital) || '—') + '</td></tr>' +
+    '</table>' +
+    (doc ? botao_(doc, 'Abrir o documento') : '') +
+    '<p style="font-size:13px"><a href="' + SITE + 'escritorio.html" style="color:#c4561a">Abrir o painel do escritório</a></p>');
+  MailApp.sendEmail({
+    to: emailAvisos_(),
+    subject: 'Formulário concluído: ' + cliente + (d.nomeA ? ' – ' + d.nomeA : ''),
+    htmlBody: html,
+    body: cliente + ' concluiu o formulário de abertura de empresa.\n' + (doc ? 'Documento: ' + doc + '\n' : '') +
+      'Painel: ' + SITE + 'escritorio.html',
+    name: REMETENTE
+  });
 }
 
 // ---------- Google Doc ----------
@@ -332,7 +447,8 @@ function publico_(v, escritorio) {
     passos: passos,
     concluido: passos.length === TOTAL_PASSOS,
     dados: dados,
-    documento: escritorio ? String(v[col_('documento')] || '') : undefined
+    documento: escritorio ? String(v[col_('documento')] || '') : undefined,
+    email: escritorio ? String(v[col_('email')] || '') : undefined
   };
 }
 

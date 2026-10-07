@@ -13,28 +13,83 @@
 <script src="config.js"></script>
 <script src="comum.js"></script>
 <style>
-  .filters { display: flex; gap: 4px; background: var(--accent-soft); padding: 4px; border-radius: 999px; }
-  .filters button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; color: var(--muted); }
-  .filters button.active { background: var(--surface); color: var(--ink); font-weight: 500; }
-  .mini-bar { display: inline-block; width: 60px; height: 5px; border-radius: 999px; background: var(--accent-soft); vertical-align: middle; margin-left: 6px; overflow: hidden; }
-  .mini-bar i { display: block; height: 100%; background: var(--gold); }
+  main { max-width: 1180px; }
+  .top-inner { max-width: 1180px; }
+  .head-actions { display: flex; gap: 8px; align-items: center; }
   .login { max-width: 420px; margin: 40px auto; }
 
+  /* barra de ferramentas */
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .toolbar input[type=search] { flex: 1; min-width: 220px; }
+  .filters { display: flex; gap: 4px; background: var(--accent-soft); padding: 4px; border-radius: 999px; flex-wrap: wrap; }
+  .filters button { border: 0; background: transparent; padding: 6px 12px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13px; color: var(--muted); }
+  .filters button.active { background: var(--surface); color: var(--ink); font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+  .filters .c { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 3px; }
+
+  /* tabela */
+  .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: visible; }
+  table.forms { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.forms th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+    padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--accent-soft); }
+  table.forms th:first-child { border-top-left-radius: var(--radius); }
+  table.forms th:last-child { border-top-right-radius: var(--radius); }
+  table.forms td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.forms tr:last-child td { border-bottom: 0; }
+  table.forms tbody tr:hover { background: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
+  .c-nome { font-weight: 600; }
+  .c-sub { color: var(--muted); font-size: 12.5px; }
+  .c-acoes { text-align: right; white-space: nowrap; }
+  .c-acoes .btn { margin-left: 4px; }
+  .tag { margin-left: 0; }
+  .mini-bar { display: block; width: 90px; height: 4px; border-radius: 999px; background: var(--accent-soft); margin-top: 6px; overflow: hidden; }
+  .mini-bar i { display: block; height: 100%; background: var(--gold); }
+  .empty { border: 0; }
+
+  /* menu ⋯ */
+  .menu-wrap { position: relative; display: inline-block; }
+  .menu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 20; min-width: 210px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 12px 30px rgba(0,0,0,.15); padding: 6px; text-align: left; }
+  .menu button, .menu a { display: block; width: 100%; text-align: left; border: 0; background: transparent; font: inherit; font-size: 14px;
+    color: var(--ink); padding: 8px 10px; border-radius: 6px; cursor: pointer; text-decoration: none; }
+  .menu button:hover, .menu a:hover { background: var(--accent-soft); }
+  .menu .danger { color: var(--danger); }
+  .menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+
+  /* telemóvel: cada linha vira um cartão */
+  @media (max-width: 760px) {
+    table.forms thead { display: none; }
+    table.forms, table.forms tbody, table.forms tr, table.forms td { display: block; width: 100%; }
+    table.forms tr { border-bottom: 1px solid var(--line); padding: 8px 0; }
+    table.forms td { border: 0; padding: 4px 14px; }
+    table.forms td[data-l]::before { content: attr(data-l) ": "; color: var(--muted); font-size: 12px; }
+    .c-acoes { text-align: left; padding-top: 8px !important; }
+    .c-acoes .btn:first-child { margin-left: 0; }
+  }
+
+  /* janelas */
   dialog.modal {
-    border: 1px solid var(--line); border-radius: 14px; padding: 0; width: min(460px, calc(100% - 32px));
+    border: 1px solid var(--line); border-radius: 14px; padding: 0; width: min(480px, calc(100% - 32px));
     background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.25);
   }
-  dialog.modal::backdrop { background: rgba(20, 20, 20, .45); backdrop-filter: blur(2px); }
+  dialog.modal::backdrop { background: rgba(10, 10, 10, .5); backdrop-filter: blur(2px); }
   dialog.modal[open] { animation: fadein .2s ease; }
   .modal-body { padding: 22px 22px 8px; }
-  .modal-body .ico { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px;
-    background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); font-size: 22px; font-weight: 600; }
+  .modal-body .ico { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px; font-size: 22px; font-weight: 600;
+    background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold); }
+  .modal-body .ico.danger { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+  .modal-body .ico.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
   .modal-body h2 { font-size: 18px; margin: 0 0 8px; }
   .modal-body p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
+  .modal-body .field { margin-bottom: 12px; }
   .modal-body .alvo { color: var(--ink); font-weight: 600; user-select: all; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
-  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px 20px; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px 20px; flex-wrap: wrap; }
+  .btn.accent { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .btn.accent:hover { opacity: .9; }
   .btn.solid-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
-  .btn.solid-danger:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.solid-danger:disabled, .btn.accent:disabled { opacity: .4; cursor: not-allowed; }
+  .linkbox { margin-top: 4px; }
+  .warn-box { font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;
+    background: color-mix(in srgb, var(--danger) 10%, transparent); color: var(--danger); }
 </style>
 </head>
 <body>
@@ -45,7 +100,10 @@
       <span class="logo-slot"></span>
       <div><b>DANIELA NEVES</b><small>ADVOCACIA · ESCRITÓRIO</small></div>
     </div>
-    <button class="btn small" id="btn-sair" hidden>Sair</button>
+    <div class="head-actions" id="head-actions" hidden>
+      <button class="btn primary" id="btn-novo">+ Novo link</button>
+      <button class="btn small" id="btn-sair">Sair</button>
+    </div>
   </div>
 </header>
 
@@ -64,50 +122,92 @@
 
   <section id="painel" hidden>
     <h1>Formulários de abertura de empresa</h1>
-    <p class="lead">Crie um link individual para cada cliente. O cliente só vê o próprio formulário; esta lista só é visível aqui.</p>
+    <p class="lead">Cada cliente recebe um link individual e só vê o próprio formulário. Esta lista só é visível aqui.</p>
 
-    <div class="card">
-      <h2>Novo link para cliente</h2>
-      <form id="novo-form" class="hist-tools" style="margin:10px 0 0">
-        <input id="novo-cliente" placeholder="Nome do cliente (ex.: Gutenberg Menezes)" required>
-        <button class="btn primary" type="submit" id="btn-criar">Criar link</button>
-      </form>
-      <div id="novo-res" hidden>
-        <p class="hint" style="margin:12px 0 0">Link criado para <strong id="novo-nome"></strong>. Envie-o ao cliente:</p>
-        <div class="linkbox">
-          <input id="novo-link" readonly>
-          <button class="btn" type="button" id="btn-copiar-novo">Copiar</button>
-          <a class="btn" id="btn-whats" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="btn" id="btn-mail">E-mail</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="hist-tools" style="align-items:center">
-      <input id="search" type="search" placeholder="Pesquisar por cliente, empresa, sócio ou NIF…">
+    <div class="toolbar">
+      <input id="search" type="search" placeholder="Pesquisar por cliente, e-mail, empresa, sócio ou NIF…">
       <div class="filters" id="filters">
-        <button data-f="todos" class="active">Todos</button>
-        <button data-f="concluido">Concluídos</button>
-        <button data-f="andamento">Em curso</button>
+        <button data-f="todos" class="active">Todos<span class="c" id="n-todos"></span></button>
+        <button data-f="concluido">Concluídos<span class="c" id="n-concluido"></span></button>
+        <button data-f="andamento">Em preenchimento<span class="c" id="n-andamento"></span></button>
+        <button data-f="novo">Por preencher<span class="c" id="n-novo"></span></button>
       </div>
       <button class="btn" id="btn-atualizar">Atualizar</button>
     </div>
-    <div id="lista"><div class="empty">A carregar…</div></div>
+
+    <div class="table-wrap">
+      <table class="forms">
+        <thead><tr><th>Cliente</th><th>Empresa</th><th>Estado</th><th>Atualizado</th><th></th></tr></thead>
+        <tbody id="lista"><tr><td colspan="5"><div class="empty">A carregar…</div></td></tr></tbody>
+      </table>
+    </div>
   </section>
 </main>
 
+<!-- novo link -->
+<dialog class="modal" id="modal-novo" aria-labelledby="mn-titulo">
+  <form method="dialog" id="mn-form" novalidate>
+    <div id="mn-passo1">
+      <div class="modal-body">
+        <div class="ico" aria-hidden="true">+</div>
+        <h2 id="mn-titulo">Novo link para cliente</h2>
+        <p>O cliente recebe por e-mail o link individual para preencher o formulário.</p>
+        <div class="field"><label for="mn-nome">Nome do cliente</label><input id="mn-nome" required placeholder="Ex.: Gutenberg Menezes"></div>
+        <div class="field"><label for="mn-email">E-mail do cliente</label><input id="mn-email" type="email" required placeholder="cliente@exemplo.com" autocomplete="off"></div>
+        <div class="err" id="mn-err" hidden></div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn" data-fechar>Cancelar</button>
+        <button type="submit" class="btn accent" id="mn-ok">Criar e enviar</button>
+      </div>
+    </div>
+    <div id="mn-passo2" hidden>
+      <div class="modal-body">
+        <div class="ico ok" aria-hidden="true">✓</div>
+        <h2>Link criado</h2>
+        <p id="mn-res"></p>
+        <div class="warn-box" id="mn-aviso" hidden></div>
+        <div class="linkbox">
+          <input id="mn-link" readonly>
+          <button type="button" class="btn" id="mn-copiar">Copiar</button>
+          <a class="btn" id="mn-whats" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>
+      <div class="modal-foot"><button type="button" class="btn primary" data-fechar>Concluir</button></div>
+    </div>
+  </form>
+</dialog>
+
+<!-- enviar / reenviar por e-mail -->
+<dialog class="modal" id="modal-email" aria-labelledby="me-titulo">
+  <form method="dialog" id="me-form" novalidate>
+    <div class="modal-body">
+      <div class="ico" aria-hidden="true">@</div>
+      <h2 id="me-titulo">Enviar link por e-mail</h2>
+      <p>Envia o link do formulário de <strong id="me-cliente"></strong> para o e-mail abaixo.</p>
+      <div class="field"><label for="me-email">E-mail do cliente</label><input id="me-email" type="email" required autocomplete="off"></div>
+      <div class="err" id="me-err" hidden></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" data-fechar>Cancelar</button>
+      <button type="submit" class="btn accent" id="me-ok">Enviar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- apagar -->
 <dialog class="modal" id="modal-apagar" aria-labelledby="ma-titulo">
   <form method="dialog" id="ma-form">
     <div class="modal-body">
-      <div class="ico" aria-hidden="true">!</div>
+      <div class="ico danger" aria-hidden="true">!</div>
       <h2 id="ma-titulo">Apagar formulário</h2>
       <p>Vai apagar o formulário de <strong id="ma-cliente"></strong>. O link do cliente deixa de funcionar e as respostas são removidas da planilha. <strong>Esta ação não pode ser desfeita.</strong></p>
       <p>Para confirmar, escreva <span id="ma-tipo">o nome da empresa</span>: <span class="alvo" id="ma-alvo"></span></p>
-      <input id="ma-input" autocomplete="off" spellcheck="false" aria-describedby="ma-alvo">
+      <input id="ma-input" autocomplete="off" spellcheck="false">
       <div class="err" id="ma-err" hidden></div>
     </div>
     <div class="modal-foot">
-      <button type="button" class="btn" id="ma-cancelar">Cancelar</button>
+      <button type="button" class="btn" data-fechar>Cancelar</button>
       <button type="submit" class="btn solid-danger" id="ma-ok" disabled>Apagar definitivamente</button>
     </div>
   </form>
@@ -119,12 +219,12 @@
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
   const KEY = 'dna-chave-escritorio';
+  const emailOk = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
   let chave = '';
   let registos = [];
   let filtro = 'todos';
 
   DNA.montarCabecalho();
-
   try { chave = localStorage.getItem(KEY) || ''; } catch {}
 
   const linkDe = codigo => (DNA.DEMO || !window.LINK_BASE ? new URL('./', location.href).href : window.LINK_BASE)
@@ -132,7 +232,7 @@
 
   // ---------- entrada ----------
   function mostrarLogin(msg) {
-    $('#painel').hidden = true; $('#btn-sair').hidden = true; $('#login').hidden = false;
+    $('#painel').hidden = true; $('#head-actions').hidden = true; $('#login').hidden = false;
     $('#login-err').hidden = !msg; $('#login-err').textContent = msg || '';
     $('#chave').focus();
   }
@@ -151,9 +251,8 @@
     chave = ''; try { localStorage.removeItem(KEY); } catch {}
     registos = []; mostrarLogin();
   };
-
   function entrar() {
-    $('#login').hidden = true; $('#painel').hidden = false; $('#btn-sair').hidden = false;
+    $('#login').hidden = true; $('#painel').hidden = false; $('#head-actions').hidden = false;
     carregar();
   }
 
@@ -165,10 +264,11 @@
       render();
     } catch (err) {
       if (/chave/i.test(err.message)) return mostrarLogin(err.message);
-      $('#lista').innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+      $('#lista').innerHTML = `<tr><td colspan="5"><div class="empty">${esc(err.message)}</div></td></tr>`;
     } finally { btn.disabled = false; }
   }
 
+  const estadoDe = r => r.concluido ? 'concluido' : (r.passos || []).length ? 'andamento' : 'novo';
   function estadoTag(r) {
     const n = (r.passos || []).length;
     if (r.concluido) return '<span class="tag ok">Concluído</span>';
@@ -177,80 +277,66 @@
   }
 
   function render() {
+    const cont = { todos: registos.length, concluido: 0, andamento: 0, novo: 0 };
+    registos.forEach(r => cont[estadoDe(r)]++);
+    Object.entries(cont).forEach(([k, v]) => $('#n-' + k).textContent = v);
+
     const q = $('#search').value.trim().toLowerCase();
     const itens = registos.filter(r =>
-      (filtro === 'todos' || (filtro === 'concluido' ? r.concluido : !r.concluido)) &&
-      (!q || (r.cliente + ' ' + JSON.stringify(r.dados)).toLowerCase().includes(q)));
+      (filtro === 'todos' || estadoDe(r) === filtro) &&
+      (!q || (r.cliente + ' ' + (r.email || '') + ' ' + JSON.stringify(r.dados)).toLowerCase().includes(q)));
     if (!itens.length) {
-      $('#lista').innerHTML = `<div class="empty">${registos.length ? 'Nenhum resultado.' : 'Ainda não há formulários. Crie o primeiro link acima.'}</div>`;
+      $('#lista').innerHTML = `<tr><td colspan="5"><div class="empty">${registos.length ? 'Nenhum resultado.' : 'Ainda não há formulários. Clique em "+ Novo link" para criar o primeiro.'}</div></td></tr>`;
       return;
     }
     $('#lista').innerHTML = itens.map(r => {
       const pct = Math.round((r.passos || []).length / TOTAL_PASSOS * 100);
       const socios = (r.dados?.socios || []).map(s => s.nome).filter(Boolean).join(', ');
       const empresa = titulo(r.dados);
-      return `<div class="hist-item" data-c="${esc(r.codigo)}">
-        <div class="info">
-          <div class="title">${esc(r.cliente || 'Cliente sem nome')} ${estadoTag(r)}</div>
-          <div class="meta">${empresa ? 'Empresa: ' + esc(empresa) + ' · ' : ''}${socios ? 'Sócios: ' + esc(socios) + ' · ' : ''}
-            Atualizado ${fmtData(r.atualizado)} <span class="mini-bar" title="${pct}%"><i style="width:${pct}%"></i></span></div>
-        </div>
-        <div class="btns">
-          <button class="btn small" data-act="copiar">Copiar link</button>
-          <a class="btn small" href="${esc(linkDe(r.codigo))}" target="_blank" rel="noopener">Abrir</a>
-          ${r.documento ? `<a class="btn small" href="${esc(r.documento)}" target="_blank" rel="noopener" title="Google Doc com as respostas">Documento</a>` : ''}
+      return `<tr data-c="${esc(r.codigo)}">
+        <td><div class="c-nome">${esc(r.cliente || 'Cliente sem nome')}</div><div class="c-sub">${esc(r.email || 'sem e-mail')}</div></td>
+        <td data-l="Empresa">${empresa ? esc(empresa) : '<span class="c-sub">—</span>'}${socios ? `<div class="c-sub">Sócios: ${esc(socios)}</div>` : ''}</td>
+        <td>${estadoTag(r)}<span class="mini-bar" title="${pct}%"><i style="width:${pct}%"></i></span></td>
+        <td data-l="Atualizado" class="c-sub" style="white-space:nowrap">${fmtData(r.atualizado)}</td>
+        <td class="c-acoes">
+          ${r.documento ? `<a class="btn small" href="${esc(r.documento)}" target="_blank" rel="noopener">Documento</a>` : ''}
           <button class="btn small" data-act="pdf" ${empresa ? '' : 'disabled title="Ainda sem respostas"'}>PDF</button>
-          <button class="btn small danger" data-act="apagar">Apagar</button>
-        </div>
-      </div>`;
+          <span class="menu-wrap"><button class="btn small" data-act="menu" aria-haspopup="true" aria-label="Mais ações">⋯</button></span>
+        </td>
+      </tr>`;
     }).join('');
   }
 
-  $('#lista').addEventListener('click', async e => {
-    const b = e.target.closest('button[data-act]'); if (!b) return;
-    const r = registos.find(x => x.codigo === b.closest('.hist-item').dataset.c); if (!r) return;
-    if (b.dataset.act === 'copiar') copiar(linkDe(r.codigo));
-    else if (b.dataset.act === 'pdf') gerarPdf(r.dados || {});
-    else if (b.dataset.act === 'apagar') abrirApagar(r);
-  });
+  // ---------- ações por linha ----------
+  let menuAberto = null;
+  function fecharMenu() { menuAberto?.remove(); menuAberto = null; }
+  document.addEventListener('click', e => { if (menuAberto && !e.target.closest('.menu, [data-act="menu"]')) fecharMenu(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharMenu(); });
 
-  // ---------- janela de apagar (exige escrever o nome da empresa) ----------
-  const modal = $('#modal-apagar');
-  let aApagar = null;
-  const normal = s => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
-  const alvoDe = r => titulo(r.dados) || r.cliente || 'apagar';
-
-  function abrirApagar(r) {
-    aApagar = r;
-    const temEmpresa = !!titulo(r.dados);
-    $('#ma-cliente').textContent = r.cliente || 'cliente sem nome';
-    $('#ma-tipo').textContent = temEmpresa ? 'o nome da empresa' : (r.cliente ? 'o nome do cliente (ainda não há nome de empresa)' : 'a palavra');
-    $('#ma-alvo').textContent = alvoDe(r);
-    $('#ma-input').value = '';
-    $('#ma-err').hidden = true;
-    $('#ma-ok').disabled = true;
-    $('#ma-ok').textContent = 'Apagar definitivamente';
-    modal.showModal();
-    $('#ma-input').focus();
-  }
-  $('#ma-input').addEventListener('input', () => {
-    $('#ma-ok').disabled = normal($('#ma-input').value) !== normal(alvoDe(aApagar));
-  });
-  $('#ma-cancelar').onclick = () => modal.close();
-  modal.addEventListener('click', e => { if (e.target === modal) modal.close(); }); // clique fora
-  $('#ma-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const r = aApagar;
-    if (!r || normal($('#ma-input').value) !== normal(alvoDe(r))) return;
-    const ok = $('#ma-ok'); ok.disabled = true; ok.textContent = 'A apagar…';
-    try {
-      await api('apagar', { chave, codigo: r.codigo });
-      registos = registos.filter(x => x !== r); render();
-      modal.close(); toast('Formulário apagado');
-    } catch (err) {
-      $('#ma-err').textContent = err.message; $('#ma-err').hidden = false;
-      ok.disabled = false; ok.textContent = 'Apagar definitivamente';
+  $('#lista').addEventListener('click', e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const r = registos.find(x => x.codigo === b.closest('tr').dataset.c); if (!r) return;
+    const act = b.dataset.act;
+    if (act === 'pdf') return gerarPdf(r.dados || {});
+    if (act === 'menu') {
+      const jaEra = menuAberto && menuAberto.parentElement === b.parentElement;
+      fecharMenu(); if (jaEra) return;
+      const m = document.createElement('div');
+      m.className = 'menu'; m.setAttribute('role', 'menu');
+      m.innerHTML = `
+        <button data-act="copiar">Copiar link</button>
+        <a href="${esc(linkDe(r.codigo))}" target="_blank" rel="noopener">Abrir formulário</a>
+        <button data-act="email">${r.email ? 'Reenviar link por e-mail' : 'Enviar link por e-mail'}</button>
+        <a href="https://wa.me/?text=${encodeURIComponent(msgCliente(r.cliente, linkDe(r.codigo)))}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+        ${r.documento ? `<a href="${esc(r.documento)}" target="_blank" rel="noopener">Abrir documento</a>` : ''}
+        <hr><button data-act="apagar" class="danger">Apagar…</button>`;
+      b.parentElement.append(m); menuAberto = m;
+      return;
     }
+    fecharMenu();
+    if (act === 'copiar') copiar(linkDe(r.codigo));
+    else if (act === 'email') abrirEmail(r);
+    else if (act === 'apagar') abrirApagar(r);
   });
 
   $('#search').oninput = render;
@@ -262,26 +348,103 @@
   });
   $('#btn-atualizar').onclick = carregar;
 
-  // ---------- novo link ----------
-  $('#novo-form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const cliente = $('#novo-cliente').value.trim(); if (!cliente) return;
-    const btn = $('#btn-criar'); btn.disabled = true;
-    try {
-      const { registo } = await api('criar', { chave, cliente });
-      registos.unshift(registo); render();
-      const link = linkDe(registo.codigo);
-      const msg = `Olá ${cliente}! Para darmos início à abertura da sua empresa, preencha por favor o formulário neste link (pode guardar e continuar mais tarde): ${link}`;
-      $('#novo-nome').textContent = cliente;
-      $('#novo-link').value = link;
-      $('#btn-whats').href = 'https://wa.me/?text=' + encodeURIComponent(msg);
-      $('#btn-mail').href = 'mailto:?subject=' + encodeURIComponent('Formulário para abertura da empresa') + '&body=' + encodeURIComponent(msg);
-      $('#novo-res').hidden = false;
-      $('#novo-cliente').value = '';
-    } catch (err) { toast(err.message); }
-    finally { btn.disabled = false; }
+  // fechar janelas: botões "Cancelar"/"Concluir" e clique fora
+  $$('dialog.modal').forEach(d => {
+    d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-fechar]')) d.close(); });
   });
-  $('#btn-copiar-novo').onclick = () => copiar($('#novo-link').value);
+
+  const msgCliente = (cliente, link) =>
+    `Olá ${cliente}! Para darmos início à abertura da sua empresa, preencha por favor o formulário neste link (pode guardar e continuar mais tarde): ${link}`;
+
+  // ---------- novo link ----------
+  $('#btn-novo').onclick = () => {
+    $('#mn-passo1').hidden = false; $('#mn-passo2').hidden = true;
+    $('#mn-nome').value = ''; $('#mn-email').value = ''; $('#mn-err').hidden = true;
+    $('#mn-ok').disabled = false; $('#mn-ok').textContent = 'Criar e enviar';
+    $('#modal-novo').showModal(); $('#mn-nome').focus();
+  };
+  $('#mn-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!$('#mn-passo2').hidden) return;
+    const cliente = $('#mn-nome').value.trim(), email = $('#mn-email').value.trim();
+    const erro = !cliente ? 'Indique o nome do cliente.' : !emailOk(email) ? 'Indique um e-mail válido.' : '';
+    if (erro) { $('#mn-err').textContent = erro; $('#mn-err').hidden = false; return; }
+    const ok = $('#mn-ok'); ok.disabled = true; ok.textContent = 'A criar e enviar…'; $('#mn-err').hidden = true;
+    try {
+      const res = await api('criar', { chave, cliente, email });
+      registos.unshift(res.registo); render();
+      const link = linkDe(res.registo.codigo);
+      $('#mn-link').value = link;
+      $('#mn-whats').href = 'https://wa.me/?text=' + encodeURIComponent(msgCliente(cliente, link));
+      $('#mn-res').innerHTML = res.emailEnviado
+        ? `O link foi enviado para <strong>${esc(email)}</strong>. Também pode copiá-lo ou enviá-lo por WhatsApp:`
+        : `O link para <strong>${esc(cliente)}</strong> foi criado. Copie-o ou envie-o por WhatsApp:`;
+      $('#mn-aviso').hidden = res.emailEnviado;
+      $('#mn-aviso').textContent = res.emailEnviado ? '' : 'Não foi possível enviar o e-mail' + (res.erroEmail ? ': ' + res.erroEmail : '.') + ' Pode tentar de novo em "⋯ → Enviar link por e-mail".';
+      $('#mn-passo1').hidden = true; $('#mn-passo2').hidden = false;
+    } catch (err) {
+      $('#mn-err').textContent = err.message; $('#mn-err').hidden = false;
+      ok.disabled = false; ok.textContent = 'Criar e enviar';
+    }
+  });
+  $('#mn-copiar').onclick = () => copiar($('#mn-link').value);
+
+  // ---------- enviar / reenviar por e-mail ----------
+  let emEnvio = null;
+  function abrirEmail(r) {
+    emEnvio = r;
+    $('#me-cliente').textContent = r.cliente || 'cliente sem nome';
+    $('#me-titulo').textContent = r.email ? 'Reenviar link por e-mail' : 'Enviar link por e-mail';
+    $('#me-email').value = r.email || '';
+    $('#me-err').hidden = true; $('#me-ok').disabled = false; $('#me-ok').textContent = 'Enviar';
+    $('#modal-email').showModal(); $('#me-email').focus();
+  }
+  $('#me-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = $('#me-email').value.trim();
+    if (!emailOk(email)) { $('#me-err').textContent = 'Indique um e-mail válido.'; $('#me-err').hidden = false; return; }
+    const ok = $('#me-ok'); ok.disabled = true; ok.textContent = 'A enviar…';
+    try {
+      const { registo } = await api('reenviar', { chave, codigo: emEnvio.codigo, email });
+      Object.assign(emEnvio, { email: registo.email || email }); render();
+      $('#modal-email').close(); toast('Link enviado para ' + email);
+    } catch (err) {
+      $('#me-err').textContent = err.message; $('#me-err').hidden = false;
+      ok.disabled = false; ok.textContent = 'Enviar';
+    }
+  });
+
+  // ---------- apagar (exige escrever o nome da empresa) ----------
+  let aApagar = null;
+  const normal = s => String(s || '').normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
+  const alvoDe = r => titulo(r.dados) || r.cliente || 'apagar';
+  function abrirApagar(r) {
+    aApagar = r;
+    const temEmpresa = !!titulo(r.dados);
+    $('#ma-cliente').textContent = r.cliente || 'cliente sem nome';
+    $('#ma-tipo').textContent = temEmpresa ? 'o nome da empresa' : (r.cliente ? 'o nome do cliente (ainda não há nome de empresa)' : 'a palavra');
+    $('#ma-alvo').textContent = alvoDe(r);
+    $('#ma-input').value = ''; $('#ma-err').hidden = true;
+    $('#ma-ok').disabled = true; $('#ma-ok').textContent = 'Apagar definitivamente';
+    $('#modal-apagar').showModal(); $('#ma-input').focus();
+  }
+  $('#ma-input').addEventListener('input', () => {
+    $('#ma-ok').disabled = normal($('#ma-input').value) !== normal(alvoDe(aApagar));
+  });
+  $('#ma-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const r = aApagar;
+    if (!r || normal($('#ma-input').value) !== normal(alvoDe(r))) return;
+    const ok = $('#ma-ok'); ok.disabled = true; ok.textContent = 'A apagar…';
+    try {
+      await api('apagar', { chave, codigo: r.codigo });
+      registos = registos.filter(x => x !== r); render();
+      $('#modal-apagar').close(); toast('Formulário apagado');
+    } catch (err) {
+      $('#ma-err').textContent = err.message; $('#ma-err').hidden = false;
+      ok.disabled = false; ok.textContent = 'Apagar definitivamente';
+    }
+  });
 
   async function copiar(txt) {
     try { await navigator.clipboard.writeText(txt); toast('Link copiado'); }

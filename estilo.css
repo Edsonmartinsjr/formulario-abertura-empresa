@@ -1,20 +1,41 @@
+/* Tema "laranja" (padrão): preto, branco, cinza e laranja escuro.
+   --gold é a cor de destaque (nome mantido por compatibilidade). */
 :root {
-  --bg: #f5f4f1;
+  --bg: #f2f2f1;
   --surface: #ffffff;
-  --ink: #1d1d1f;
-  --muted: #6b6b70;
-  --line: #e2e0db;
-  --accent: #2b2b2b;
-  --accent-soft: #efeeea;
-  --gold: #9a7b4f;
+  --ink: #111111;
+  --muted: #6e6a65;
+  --line: #e0dedb;
+  --accent: #111111;
+  --accent-soft: #ecebe9;
+  --gold: #c4561a;
+  --grey: #a6a19b;
+  --header-bg: #111111;
+  --header-ink: #ffffff;
+  --header-muted: #a6a19b;
   --danger: #b3261e;
   --ok: #2e7d4f;
   --radius: 10px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    --bg: #0e0e0e; --surface: #1a1a1a; --ink: #f1f1f1; --muted: #a6a19b;
+    --line: #2e2e2e; --accent: #f1f1f1; --accent-soft: #262626; --gold: #e0702e;
+    --header-bg: #000000;
+  }
+}
+
+/* Tema "dourado" (o anterior): ?tema=dourado */
+:root[data-tema="dourado"] {
+  --bg: #f5f4f1; --surface: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e2e0db;
+  --accent: #2b2b2b; --accent-soft: #efeeea; --gold: #9a7b4f;
+  --header-bg: #ffffff; --header-ink: #1d1d1f; --header-muted: #6b6b70;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-tema="dourado"]:not([data-theme="light"]) {
     --bg: #161616; --surface: #1f1f1f; --ink: #ececec; --muted: #a0a0a5;
     --line: #333; --accent: #e8e8e8; --accent-soft: #2a2a2a; --gold: #c9a874;
+    --header-bg: #1f1f1f; --header-ink: #ececec; --header-muted: #a0a0a5;
   }
 }
 * { box-sizing: border-box; }
@@ -22,12 +43,16 @@ body {
   margin: 0; background: var(--bg); color: var(--ink);
   font-family: "Montserrat", system-ui, sans-serif; font-size: 15px; line-height: 1.5;
 }
-header.top { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+header.top { background: var(--header-bg); color: var(--header-ink); border-bottom: 3px solid var(--gold); position: sticky; top: 0; z-index: 10; }
+header.top .btn { background: transparent; color: var(--header-ink); border-color: color-mix(in srgb, var(--header-ink) 25%, transparent); }
+header.top .btn:hover { background: color-mix(in srgb, var(--header-ink) 10%, transparent); }
+header.top .btn.primary { background: var(--gold); border-color: var(--gold); color: #fff; }
+header.top .btn.primary:hover { opacity: .9; }
 .top-inner { max-width: 980px; margin: 0 auto; padding: 14px 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
-.logo { width: 46px; height: auto; color: var(--ink); display: block; }
+.logo { width: 46px; height: auto; color: var(--header-ink); display: block; }
 .brand b { font-weight: 400; letter-spacing: 3px; font-size: 16px; display: block; }
-.brand small { letter-spacing: 3px; font-size: 10px; color: var(--muted); }
+.brand small { letter-spacing: 3px; font-size: 10px; color: var(--header-muted); }
 .demo { background: #fff3cd; color: #6b4f00; text-align: center; font-size: 13px; padding: 6px 16px; }
 
 main { max-width: 980px; margin: 0 auto; padding: 24px 16px 80px; }
