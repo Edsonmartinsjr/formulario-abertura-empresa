@@ -126,6 +126,7 @@
       case 'obter': return { ok: true, registo: achar() };
       case 'guardar': {
         const r = achar();
+        if (r.concluido) throw new Error('Este formulário já foi submetido.');
         const passos = [...new Set(p.passos || [])].sort();
         Object.assign(r, { dados: p.dados, passos, concluido: passos.length === TOTAL_PASSOS, atualizado: agora,
           estado: passos.length === TOTAL_PASSOS ? 'Concluído' : 'Em preenchimento' });
@@ -137,13 +138,15 @@
         chave();
         const letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         const codigo = [...crypto.getRandomValues(new Uint8Array(10))].map(b => letras[b % letras.length]).join('');
-        const r = { codigo, cliente: p.cliente || '', email: p.email || '', criado: agora, atualizado: agora,
+        const r = { codigo, cliente: p.cliente || '', email: p.email || '', idioma: p.idioma || 'pt', criado: agora, atualizado: agora,
           estado: 'Por preencher', passos: [], concluido: false, dados: {}, documento: '' };
         lista.push(r); gravar(); return { ok: true, registo: r, emailEnviado: !!p.email };
       }
       case 'reenviar': {
         chave(); const r = achar();
-        if (p.email) { r.email = p.email; gravar(); }
+        if (p.email) r.email = p.email;
+        if (p.idioma) r.idioma = p.idioma;
+        gravar();
         return { ok: true, registo: r };
       }
       case 'apagar': chave(); lista = lista.filter(x => x.codigo !== p.codigo); gravar(); return { ok: true };

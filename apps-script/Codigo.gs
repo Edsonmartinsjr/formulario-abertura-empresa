@@ -10,7 +10,8 @@
  */
 
 const FOLHA = 'Formularios';
-const COLUNAS = ['codigo', 'cliente', 'criado', 'atualizado', 'estado', 'passos', 'empresa', 'socios', 'dados', 'documento', 'email'];
+const COLUNAS = ['codigo', 'cliente', 'criado', 'atualizado', 'estado', 'passos', 'empresa', 'socios', 'dados', 'documento', 'email', 'idioma'];
+const IDIOMAS = ['pt', 'en', 'es'];
 const TOTAL_PASSOS = 6;
 const NOME_PASTA = 'Formulários abertura empresa – Documentos';
 
@@ -109,6 +110,8 @@ function tratar_(p) {
         const concluido = unicos.length === TOTAL_PASSOS;
         const v = linha.valores;
         const jaConcluido = v[col_('estado')] === 'Concluído';
+        // Depois de submetido, o formulário fica fechado (o que o escritório recebeu não muda).
+        if (jaConcluido) throw new Error('Este formulário já foi submetido.');
         v[col_('atualizado')] = new Date();
         v[col_('estado')] = concluido ? 'Concluído' : 'Em preenchimento';
         v[col_('passos')] = unicos.join(',');
@@ -142,10 +145,11 @@ function tratar_(p) {
       verificarChave_(p.chave);
       const email = String(p.email || '').trim();
       if (email && !emailValido_(email)) throw new Error('E-mail do cliente inválido.');
+      const idioma = IDIOMAS.indexOf(p.idioma) >= 0 ? p.idioma : 'pt';
       const v = comBloqueio_(() => {
         const agora = new Date();
         const linha = [codigoCurto_(), texto_(String(p.cliente || '').slice(0, 200)), agora, agora,
-          'Por preencher', '', '', '', '{}', '', texto_(email)];
+          'Por preencher', '', '', '', '{}', '', texto_(email), idioma];
         folha_().appendRow(linha);
         return linha;
       });
@@ -163,7 +167,10 @@ function tratar_(p) {
       const v = linha.valores;
       const email = String(p.email || v[col_('email')] || '').trim();
       if (!emailValido_(email)) throw new Error('Indique um e-mail válido para o cliente.');
-      if (email !== v[col_('email')]) { v[col_('email')] = texto_(email); linha.intervalo.setValues([v]); }
+      const idioma = IDIOMAS.indexOf(p.idioma) >= 0 ? p.idioma : (v[col_('idioma')] || 'pt');
+      if (email !== v[col_('email')] || idioma !== v[col_('idioma')]) {
+        v[col_('email')] = texto_(email); v[col_('idioma')] = idioma; linha.intervalo.setValues([v]);
+      }
       enviarLink_(v);
       return { ok: true, registo: publico_(v, true) };
     }
@@ -229,25 +236,41 @@ function botao_(url, texto) {
     'padding:12px 22px;border-radius:8px;font-weight:bold;display:inline-block">' + esc_(texto) + '</a></p>';
 }
 
-/** Envia ao cliente o link individual do formulário. */
+/** Textos do e-mail com o link, por idioma. */
+const TEXTOS_LINK = {
+  pt: { assunto: 'Formulário para a abertura da sua empresa', ola: 'Olá', botao: 'Preencher formulário',
+    corpo: 'Para darmos início à abertura da sua empresa, pedimos que preencha o formulário no link abaixo. Pode guardar e continuar mais tarde com o mesmo link.',
+    alt: 'Se o botão não funcionar, copie este endereço para o navegador:',
+    fim: 'Qualquer dúvida, basta responder a este e-mail.', cumpr: 'Com os melhores cumprimentos,' },
+  en: { assunto: 'Form for incorporating your company', ola: 'Hello', botao: 'Fill in the form',
+    corpo: 'To start incorporating your company in Portugal, please fill in the form at the link below. You can save and continue later using the same link.',
+    alt: 'If the button does not work, copy this address into your browser:',
+    fim: 'If you have any questions, simply reply to this e-mail.', cumpr: 'Kind regards,' },
+  es: { assunto: 'Formulario para la constitución de su empresa', ola: 'Hola', botao: 'Rellenar formulario',
+    corpo: 'Para iniciar la constitución de su empresa en Portugal, le pedimos que rellene el formulario en el enlace siguiente. Puede guardar y continuar más tarde con el mismo enlace.',
+    alt: 'Si el botón no funciona, copie esta dirección en su navegador:',
+    fim: 'Si tiene alguna duda, basta con responder a este correo.', cumpr: 'Atentamente,' }
+};
+
+/** Envia ao cliente o link individual do formulário, no idioma escolhido. */
 function enviarLink_(v) {
   const email = String(v[col_('email')] || '');
   const cliente = String(v[col_('cliente')] || '').replace(/^'/, '');
-  const link = SITE + '?c=' + v[col_('codigo')];
+  const idioma = IDIOMAS.indexOf(v[col_('idioma')]) >= 0 ? v[col_('idioma')] : 'pt';
+  const T = TEXTOS_LINK[idioma];
+  const link = SITE + '?c=' + v[col_('codigo')] + (idioma !== 'pt' ? '&l=' + idioma : '');
   const html = moldura_(
-    '<p>Olá' + (cliente ? ' ' + esc_(cliente) : '') + ',</p>' +
-    '<p>Para darmos início à abertura da sua empresa, pedimos que preencha o formulário no link abaixo. ' +
-    'Pode guardar e continuar mais tarde com o mesmo link.</p>' +
-    botao_(link, 'Preencher formulário') +
-    '<p style="font-size:13px;color:#77736e">Se o botão não funcionar, copie este endereço para o navegador:<br>' +
+    '<p>' + T.ola + (cliente ? ' ' + esc_(cliente) : '') + ',</p>' +
+    '<p>' + T.corpo + '</p>' +
+    botao_(link, T.botao) +
+    '<p style="font-size:13px;color:#77736e">' + T.alt + '<br>' +
     '<a href="' + esc_(link) + '" style="color:#c4561a">' + esc_(link) + '</a></p>' +
-    '<p>Qualquer dúvida, basta responder a este e-mail.</p><p>Com os melhores cumprimentos,<br>Daniela Neves Advocacia</p>');
+    '<p>' + T.fim + '</p><p>' + T.cumpr + '<br>Daniela Neves Advocacia</p>');
   MailApp.sendEmail({
     to: email,
-    subject: 'Formulário para a abertura da sua empresa',
+    subject: T.assunto,
     htmlBody: html,
-    body: 'Olá ' + cliente + ',\n\nPreencha o formulário para a abertura da sua empresa neste link:\n' + link +
-      '\n\nPode guardar e continuar mais tarde com o mesmo link.\n\nDaniela Neves Advocacia',
+    body: T.ola + ' ' + cliente + ',\n\n' + T.corpo + '\n\n' + link + '\n\n' + T.cumpr + '\nDaniela Neves Advocacia',
     name: REMETENTE
   });
 }
@@ -448,7 +471,8 @@ function publico_(v, escritorio) {
     concluido: passos.length === TOTAL_PASSOS,
     dados: dados,
     documento: escritorio ? String(v[col_('documento')] || '') : undefined,
-    email: escritorio ? String(v[col_('email')] || '') : undefined
+    email: escritorio ? String(v[col_('email')] || '') : undefined,
+    idioma: String(v[col_('idioma')] || 'pt')
   };
 }
 

@@ -5,13 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>Abertura de Empresa</title>
+<title>Abertura de Empresa · Daniela Neves Advocacia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="estilo.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="config.js"></script>
 <script src="comum.js"></script>
+<script src="i18n.js"></script>
+<style>
+  .lang { display: flex; gap: 2px; border: 1px solid color-mix(in srgb, var(--header-ink) 25%, transparent); border-radius: 999px; padding: 3px; }
+  .lang button { border: 0; background: transparent; color: var(--header-muted); font: inherit; font-size: 12px; font-weight: 600;
+    letter-spacing: .05em; padding: 5px 10px; border-radius: 999px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--gold); color: #fff; }
+  .req-note { color: var(--muted); font-size: 13px; margin: -16px 0 20px; }
+  label.req::after { content: " *"; color: var(--gold); }
+  .fld .ferr { color: var(--danger); font-size: 12.5px; margin-top: 4px; }
+  [aria-invalid="true"] { border-color: var(--danger) !important; background: color-mix(in srgb, var(--danger) 4%, var(--surface)); }
+  .radio-row.fld { flex-wrap: wrap; }
+  .radio-row .ferr { flex-basis: 100%; }
+
+  /* revisão */
+  #review .actions { background: var(--surface); margin: 8px -20px -20px; padding: 14px 20px; border-radius: 0 0 var(--radius) var(--radius); }
+  .rev-sec { border-top: 1px solid var(--line); padding: 14px 0; }
+  .rev-sec:first-of-type { border-top: 0; }
+  .rev-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .rev-head h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: baseline; }
+  .rev-head h3 .n { color: var(--gold); font-family: "Source Serif 4", serif; font-size: 18px; }
+  .rev-grid { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 4px 16px; font-size: 14px; }
+  .rev-grid dt { color: var(--muted); }
+  .rev-grid dd { margin: 0; white-space: pre-wrap; word-break: break-word; }
+  .rev-sub { font-weight: 600; margin: 10px 0 4px; font-size: 14px; }
+  @media (max-width: 560px) { .rev-grid { grid-template-columns: 1fr; } .rev-grid dd { margin-bottom: 6px; } }
+</style>
 </head>
 <body>
 
@@ -21,86 +47,92 @@
       <span class="logo-slot"></span>
       <div><b>DANIELA NEVES</b><small>ADVOCACIA</small></div>
     </div>
+    <div class="lang" role="group" aria-label="Idioma / Language / Idioma">
+      <button type="button" data-lang="pt" lang="pt">PT</button>
+      <button type="button" data-lang="en" lang="en">EN</button>
+      <button type="button" data-lang="es" lang="es">ES</button>
+    </div>
   </div>
 </header>
 
 <main>
-  <h1>Formulário para a abertura da empresa</h1>
-  <p class="lead" id="lead">A carregar…</p>
+  <h1 data-t="titulo"></h1>
+  <p class="lead" id="lead"></p>
+  <p class="req-note" id="req-note" data-t="obrigatorios" hidden></p>
 
   <!-- link inválido / erro ao carregar -->
   <div class="card center-card" id="aviso" hidden>
-    <h2 id="aviso-titulo">Link inválido</h2>
-    <p class="hint" id="aviso-texto">Este endereço não corresponde a nenhum formulário. Use o link que recebeu do escritório.</p>
-    <div class="btns"><button class="btn" id="btn-retry" hidden>Tentar novamente</button></div>
+    <h2 id="aviso-titulo"></h2>
+    <p class="hint" id="aviso-texto"></p>
+    <div class="btns"><button class="btn" id="btn-retry" data-t="tentar" hidden></button></div>
   </div>
 
   <div id="app" hidden>
     <div class="progress" id="progress">
       <div class="progress-top">
-        <strong id="prog-label">Passo 1 de 6</strong>
-        <span><span class="pct" id="prog-pct">0%</span> concluído</span>
+        <strong id="prog-label"></strong>
+        <span><span class="pct" id="prog-pct">0%</span> <span data-t="concluido"></span></span>
       </div>
       <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="prog-fill"></div></div>
       <div class="steps" id="steps"></div>
     </div>
 
     <form id="f" autocomplete="off" novalidate>
-      <div class="card step" data-title="Nome">
-        <h2><span class="n">1</span> Opções de nome (razão social)</h2>
-        <p class="hint">Informar três opções de nomes para a empresa.</p>
-        <div class="note"><strong>Importante:</strong> as três opções devem ser <strong>totalmente diferentes</strong> umas das outras. Variações do mesmo nome (por exemplo, mudar apenas uma palavra, a ordem ou a terminação) costumam ser recusadas pelo Registo Nacional de Pessoas Coletivas (RNPC), porque são consideradas semelhantes.</div>
+      <div class="card step" data-s="s1">
+        <h2><span class="n">1</span> <span data-t="h1"></span></h2>
+        <p class="hint" data-t="hint1"></p>
+        <div class="note" data-t-html="nota1"></div>
         <div class="grid">
-          <div class="full prefix"><span>A</span><input name="nomeA" placeholder="1.ª opção"></div>
-          <div class="full prefix"><span>B</span><input name="nomeB" placeholder="2.ª opção"></div>
-          <div class="full prefix"><span>C</span><input name="nomeC" placeholder="3.ª opção"></div>
+          <div class="full fld"><div class="prefix"><span>A</span><input name="nomeA" data-ph="op1" required></div></div>
+          <div class="full fld"><div class="prefix"><span>B</span><input name="nomeB" data-ph="op2" required></div></div>
+          <div class="full fld"><div class="prefix"><span>C</span><input name="nomeC" data-ph="op3" required></div></div>
         </div>
       </div>
 
-      <div class="card step" data-title="Atividades" hidden>
-        <h2><span class="n">2</span> Atividades principais e secundárias</h2>
-        <p class="hint">Descrever todas as atividades a serem desenvolvidas pela empresa, para que o escritório possa enquadrar nos CAE's, com base na legislação portuguesa.</p>
-        <textarea name="atividades" placeholder="Ex.: remodelação, construção, pintura interior e exterior, eletricidade, canalização…"></textarea>
+      <div class="card step" data-s="s2" hidden>
+        <h2><span class="n">2</span> <span data-t="h2"></span></h2>
+        <p class="hint" data-t="hint2"></p>
+        <div class="fld"><textarea name="atividades" data-ph="ph2" required></textarea></div>
       </div>
 
-      <div class="card step" data-title="Capital" hidden>
-        <h2><span class="n">3</span> Valor do capital social</h2>
-        <p class="hint">Este valor poderá ser depositado na conta da empresa até ao último mês do ano fiscal.</p>
+      <div class="card step" data-s="s3" hidden>
+        <h2><span class="n">3</span> <span data-t="h3"></span></h2>
+        <p class="hint" data-t="hint3"></p>
         <div class="grid">
-          <div><label>Capital social (€)</label><input name="capital" type="number" min="0" step="0.01" inputmode="decimal"></div>
+          <div class="fld"><label class="req" data-t="capital" for="capital"></label><input id="capital" name="capital" type="number" min="0" step="0.01" inputmode="decimal" required></div>
         </div>
       </div>
 
-      <div class="card step" data-title="Sócios" hidden>
-        <h2><span class="n">4</span> Sócios</h2>
-        <p class="hint">Quantidade de sócios: <strong id="n-socios">0</strong></p>
+      <div class="card step" data-s="s4" hidden>
+        <h2><span class="n">4</span> <span data-t="h4"></span></h2>
+        <p class="hint"><span data-t="hint4"></span><br><strong id="n-socios"></strong></p>
         <div id="socios"></div>
-        <div style="margin-top:12px"><button type="button" class="btn" id="add-socio">+ Adicionar sócio</button></div>
+        <div style="margin-top:12px"><button type="button" class="btn" id="add-socio" data-t="addSocio"></button></div>
         <div id="quota-check" class="warn" hidden></div>
       </div>
 
-      <div class="card step" data-title="Contabilista" hidden>
-        <h2><span class="n">5</span> Já possui contabilista?</h2>
-        <div class="radio-row">
-          <label><input type="radio" name="temContabilista" value="sim"> Sim</label>
-          <label><input type="radio" name="temContabilista" value="nao" checked> Não</label>
+      <div class="card step" data-s="s5" hidden>
+        <h2><span class="n">5</span> <span data-t="h5"></span></h2>
+        <div class="radio-row fld" id="contab-radio">
+          <label><input type="radio" name="temContabilista" value="sim" required> <span data-t="sim"></span></label>
+          <label><input type="radio" name="temContabilista" value="nao" required> <span data-t="nao"></span></label>
         </div>
         <div class="grid" id="contab-fields" hidden>
-          <div class="full"><label>Nome completo</label><input name="contNome"></div>
-          <div><label>Número da Ordem</label><input name="contOrdem"></div>
-          <div><label>NIF</label><input name="contNif" inputmode="numeric"></div>
-          <div class="full"><label>Morada completa</label><input name="contMorada"></div>
+          <div class="full fld"><label class="req" data-t="contNome" for="contNome"></label><input id="contNome" name="contNome" required></div>
+          <div class="fld"><label class="req" data-t="contOrdem" for="contOrdem"></label><input id="contOrdem" name="contOrdem" required></div>
+          <div class="fld"><label class="req" data-t="contNif" for="contNif"></label><input id="contNif" name="contNif" inputmode="numeric" maxlength="9" data-nif required></div>
+          <div class="full fld"><label class="req" data-t="contMorada" for="contMorada"></label><input id="contMorada" name="contMorada" required></div>
         </div>
       </div>
 
-      <div class="card step" data-title="Morada" hidden>
-        <h2><span class="n">6</span> Morada da empresa</h2>
+      <div class="card step" data-s="s6" hidden>
+        <h2><span class="n">6</span> <span data-t="h6"></span></h2>
         <div class="grid">
-          <div class="full"><label>Rua</label><input name="empRua"></div>
-          <div><label>Freguesia</label><input name="empFreguesia"></div>
-          <div><label>Concelho</label><input name="empConcelho"></div>
-          <div><label>Distrito</label><input name="empDistrito"></div>
-          <div><label>Código postal</label><input name="empCP" placeholder="0000-000"></div>
+          <div class="full fld"><label class="req" data-t="rua" for="empRua"></label><input id="empRua" name="empRua" required></div>
+          <div class="fld"><label class="req" data-t="freguesia" for="empFreguesia"></label><input id="empFreguesia" name="empFreguesia" required></div>
+          <div class="fld"><label class="req" data-t="concelho" for="empConcelho"></label><input id="empConcelho" name="empConcelho" required></div>
+          <div class="fld"><label class="req" data-t="distrito" for="empDistrito"></label><input id="empDistrito" name="empDistrito" required></div>
+          <div class="fld"><label class="req" data-t="cp" for="empCP"></label><input id="empCP" name="empCP" placeholder="0000-000" inputmode="numeric" maxlength="8" data-cp required></div>
         </div>
       </div>
 
@@ -108,18 +140,33 @@
 
       <div class="actions">
         <span class="status" id="status"></span>
-        <button type="button" class="btn" id="btn-back">← Voltar</button>
-        <button type="submit" class="btn primary" id="btn-next">Guardar e avançar →</button>
+        <button type="button" class="btn" id="btn-back" data-t="voltar"></button>
+        <button type="submit" class="btn primary" id="btn-next"></button>
       </div>
     </form>
 
+    <!-- revisão final -->
+    <section class="card" id="review" hidden>
+      <h2 data-t="revH"></h2>
+      <p class="hint" id="rev-p" data-t="revP"></p>
+      <div id="rev-body"></div>
+      <div class="err" id="rev-err" hidden></div>
+      <div class="actions" id="rev-actions">
+        <button type="button" class="btn" id="btn-rev-editar" data-t="editarRespostas"></button>
+        <button type="button" class="btn primary" id="btn-submeter" data-t="submeter"></button>
+      </div>
+      <div class="actions" id="rev-actions-ro" hidden>
+        <button type="button" class="btn" id="btn-rev-fechar" data-t="fechar"></button>
+      </div>
+    </section>
+
     <div class="card center-card" id="done" hidden>
       <div class="check">✓</div>
-      <h2>Formulário concluído</h2>
-      <p class="hint">Obrigado! As suas respostas foram enviadas ao escritório. Pode guardar uma cópia em PDF ou rever as respostas — se alterar alguma coisa, carregue em "Guardar" novamente.</p>
+      <h2 data-t="fimH"></h2>
+      <p class="hint" data-t="fimP"></p>
       <div class="btns">
-        <button type="button" class="btn primary" id="btn-pdf">Descarregar PDF</button>
-        <button type="button" class="btn" id="btn-review">Rever respostas</button>
+        <button type="button" class="btn primary" id="btn-pdf" data-t="pdf"></button>
+        <button type="button" class="btn" id="btn-ver" data-t="verRespostas"></button>
       </div>
     </div>
   </div>
@@ -128,35 +175,21 @@
 <template id="tpl-socio">
   <div class="socio">
     <div class="socio-head">
-      <strong class="socio-title">1.º Sócio(a)</strong>
-      <button type="button" class="btn small danger rm-socio">Remover</button>
+      <strong class="socio-title"></strong>
+      <button type="button" class="btn small danger rm-socio" data-t="remover"></button>
     </div>
     <div class="grid">
-      <div class="full"><label>Nome</label><input data-f="nome"></div>
-      <div><label>Data de nascimento</label><input data-f="nascimento" type="date"></div>
-      <div><label>Estado civil</label>
-        <select data-f="estadoCivil">
-          <option value="">—</option>
-          <option>Solteiro(a)</option><option>Casado(a)</option><option>União de facto</option>
-          <option>Divorciado(a)</option><option>Viúvo(a)</option><option>Separado(a) judicialmente</option>
-        </select>
-      </div>
-      <div class="conj"><label>Nome do cônjuge</label><input data-f="conjuge"></div>
-      <div class="conj"><label>Regime de bens</label>
-        <input data-f="regime" list="regimes" placeholder="Escolha ou escreva">
-      </div>
-      <div><label>NIF</label><input data-f="nif" inputmode="numeric"></div>
-      <div><label>Valor da quota societária (€)</label><input data-f="quota" type="number" min="0" step="0.01" inputmode="decimal"></div>
-      <div class="full"><label>Morada</label><input data-f="morada"></div>
+      <div class="full fld"><label class="req" data-t="nome"></label><input data-f="nome" required></div>
+      <div class="fld"><label class="req" data-t="nascimento"></label><input data-f="nascimento" type="date" required data-data></div>
+      <div class="fld"><label class="req" data-t="estadoCivil"></label><select data-f="estadoCivil" data-opts="ec" required></select></div>
+      <div class="conj fld"><label class="req" data-t="conjuge"></label><input data-f="conjuge" required></div>
+      <div class="conj fld"><label class="req" data-t="regime"></label><select data-f="regime" data-opts="rg" required></select></div>
+      <div class="fld"><label class="req" data-t="nif"></label><input data-f="nif" inputmode="numeric" maxlength="9" required data-nif></div>
+      <div class="fld"><label class="req" data-t="quota"></label><input data-f="quota" type="number" min="0" step="0.01" inputmode="decimal" required data-positivo></div>
+      <div class="full fld"><label class="req" data-t="morada"></label><input data-f="morada" required></div>
     </div>
   </div>
 </template>
-<datalist id="regimes">
-  <option value="Comunhão de adquiridos">
-  <option value="Comunhão geral de bens">
-  <option value="Separação de bens">
-  <option value="Comunhão parcial de bens">
-</datalist>
 
 <script>
 (() => {
@@ -165,86 +198,211 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const form = $('#f');
   const STEPS = $$('.step', form);
+  const N = STEPS.length;
   const params = new URLSearchParams(location.search);
   const codigo = params.get('c') || params.get('f'); // ?f= = links antigos
+
+  let lang = 'pt';
   let step = 0;
   let doneSteps = new Set();
-  let dirty = false;
-  let saving = false;
+  let submetido = false;
+  let cliente = '';
+  let dirty = false, saving = false;
+  let voltarRevisao = false;   // ao editar a partir da revisão, voltar a ela depois de guardar
+  let ecraAtual = 'form';      // form | review | done
 
   DNA.montarCabecalho();
 
+  // ---------- idioma ----------
+  function t(k, vars) {
+    let s = (I18N[lang] && I18N[lang][k]) ?? I18N.pt[k] ?? k;
+    if (vars && typeof s === 'string') s = s.replace(/\{(\w+)\}/g, (_, v) => vars[v] ?? '');
+    return s;
+  }
+  function escolherIdiomaInicial(doServidor) {
+    let guardado = null;
+    try { guardado = localStorage.getItem('dna-lang'); } catch {}
+    const nav = (navigator.language || 'pt').slice(0, 2);
+    const cand = [params.get('l'), guardado, doServidor, nav].find(x => I18N[x]);
+    return cand || 'pt';
+  }
+  function popularOpcoes(sel) {
+    const mapa = t(sel.dataset.opts), atual = sel.value;
+    sel.innerHTML = `<option value="">${t('escolha')}</option>` +
+      Object.keys(I18N.pt[sel.dataset.opts]).map(v => `<option value="${v}">${mapa[v] || v}</option>`).join('');
+    sel.value = atual;
+  }
+  function aplicarIdioma() {
+    document.documentElement.lang = lang;
+    document.title = t('titulo') + ' · Daniela Neves Advocacia';
+    $$('[data-t]').forEach(el => el.textContent = t(el.dataset.t));
+    $$('[data-t-html]').forEach(el => el.innerHTML = t(el.dataset.tHtml));
+    $$('[data-ph]').forEach(el => el.placeholder = t(el.dataset.ph));
+    $$('select[data-opts]').forEach(popularOpcoes);
+    $$('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    if (!$('#app').hidden) $('#lead').textContent = cliente ? t('leadCliente', { n: cliente }) : t('leadGeral');
+    renumber();
+    atualizarBotoes();
+    renderSteps();
+    $$('.ferr').forEach(e => { if (e.dataset.k) e.textContent = t(e.dataset.k); });
+    if (ecraAtual === 'review') renderReview();
+  }
+  $$('.lang button').forEach(b => b.onclick = () => {
+    lang = b.dataset.lang;
+    try { localStorage.setItem('dna-lang', lang); } catch {}
+    aplicarIdioma();
+  });
+
   // ---------- carregar o formulário deste cliente ----------
   function aviso(titulo, texto, retry = false) {
-    $('#app').hidden = true; $('#aviso').hidden = false;
+    $('#app').hidden = true; $('#aviso').hidden = false; $('#req-note').hidden = true;
     $('#aviso-titulo').textContent = titulo; $('#aviso-texto').textContent = texto;
     $('#btn-retry').hidden = !retry;
     $('#lead').textContent = '';
   }
   async function carregar() {
-    if (!codigo) {
-      aviso('Link incompleto', 'Para preencher o formulário, use o link individual que recebeu do escritório Daniela Neves Advocacia.');
-      return;
-    }
-    $('#aviso').hidden = true; $('#lead').textContent = 'A carregar…';
+    if (!codigo) { aviso(t('linkIncompletoT'), t('linkIncompleto')); return; }
+    $('#aviso').hidden = true; $('#lead').textContent = t('carregando');
     try {
       const { registo } = await api('obter', { codigo });
+      lang = escolherIdiomaInicial(registo.idioma);
+      cliente = registo.cliente || '';
       fill(registo.dados || {});
       doneSteps = new Set(registo.passos || []);
-      $('#lead').textContent = registo.cliente ? `Formulário de ${registo.cliente}` : 'Preencha cada passo e carregue em "Guardar e avançar".';
+      submetido = !!registo.concluido;
       $('#app').hidden = false;
+      aplicarIdioma();
+      if (submetido) return showDone();
+      $('#req-note').hidden = false;
       const next = STEPS.findIndex((_, i) => !doneSteps.has(i));
-      next === -1 ? showDone() : goStep(next);
+      goStep(next === -1 ? N - 1 : next);
     } catch (e) {
-      const invalido = /inválido/i.test(e.message);
-      aviso(invalido ? 'Link inválido' : 'Não foi possível carregar', e.message, !invalido);
+      if (/inválido/i.test(e.message)) aviso(t('linkInvalidoT'), t('linkInvalido'));
+      else aviso(t('erroCarregarT'), /ligação/i.test(e.message) ? t('semLigacao') : e.message, true);
     }
   }
   $('#btn-retry').onclick = carregar;
 
   // ---------- passos e progresso ----------
+  const maxPermitido = () => { const i = STEPS.findIndex((_, j) => !doneSteps.has(j)); return i === -1 ? N - 1 : i; };
   function renderSteps() {
-    const doneVisible = !$('#done').hidden;
+    const final = ecraAtual !== 'form';
     $('#steps').innerHTML = STEPS.map((s, i) => `
-      <button type="button" data-i="${i}" class="${doneSteps.has(i) ? 'done' : ''} ${i === step && !doneVisible ? 'current' : ''}">
-        <span class="dot">${doneSteps.has(i) ? '✓' : i + 1}</span><span class="lbl">${s.dataset.title}</span>
+      <button type="button" data-i="${i}" class="${doneSteps.has(i) || submetido ? 'done' : ''} ${i === step && !final ? 'current' : ''}"
+        ${submetido || i > maxPermitido() ? 'disabled' : ''}>
+        <span class="dot">${doneSteps.has(i) || submetido ? '✓' : i + 1}</span><span class="lbl">${t(s.dataset.s)}</span>
       </button>`).join('');
-    const pct = Math.round(doneSteps.size / STEPS.length * 100);
+    const pct = submetido ? 100 : Math.round(doneSteps.size / N * 100);
     $('#prog-fill').style.width = pct + '%';
     $('#prog-pct').textContent = pct + '%';
     $('.bar').setAttribute('aria-valuenow', pct);
-    $('#prog-label').textContent = doneVisible
-      ? 'Todas as etapas concluídas'
-      : `Passo ${step + 1} de ${STEPS.length} · ${STEPS[step].dataset.title}`;
+    $('#prog-label').textContent = submetido ? t('submetidoEtapa')
+      : ecraAtual === 'review' ? t('revisaoFinal')
+      : `${t('passo', { a: step + 1, b: N })} · ${t(STEPS[step].dataset.s)}`;
+  }
+  function atualizarBotoes() {
+    $('#btn-back').style.visibility = step === 0 ? 'hidden' : 'visible';
+    if (!saving) $('#btn-next').textContent = (step === N - 1 || voltarRevisao) ? t('rever') : t('avancar');
+  }
+  function mostrar(ecra) {
+    ecraAtual = ecra;
+    form.hidden = ecra !== 'form';
+    $('#review').hidden = ecra !== 'review';
+    $('#done').hidden = ecra !== 'done';
+    $('#req-note').hidden = ecra !== 'form';
+    renderSteps();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function goStep(i) {
-    step = Math.max(0, Math.min(STEPS.length - 1, i));
+    step = Math.max(0, Math.min(N - 1, i));
     STEPS.forEach((s, j) => s.hidden = j !== step);
-    form.hidden = false; $('#done').hidden = true;
     $('#step-err').hidden = true;
-    $('#btn-back').style.visibility = step === 0 ? 'hidden' : 'visible';
-    $('#btn-next').textContent = step === STEPS.length - 1 ? 'Guardar e concluir ✓' : 'Guardar e avançar →';
-    renderSteps();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    $('input, textarea, select', STEPS[step])?.focus({ preventScroll: true });
-  }
-  function showDone() {
-    form.hidden = true; $('#done').hidden = false;
-    renderSteps();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  function validateStep() {
-    if (step === 0 && !form.nomeA.value.trim()) return 'Indique pelo menos a 1.ª opção de nome (A).';
-    if (step === 3 && !$$('#socios [data-f="nome"]').some(i => i.value.trim())) return 'Indique o nome de pelo menos um sócio.';
-    return '';
+    atualizarBotoes();
+    mostrar('form');
+    $('input:not([type=radio]), textarea, select', STEPS[step])?.focus({ preventScroll: true });
   }
   $('#steps').addEventListener('click', e => {
-    const b = e.target.closest('button[data-i]'); if (b) goStep(+b.dataset.i);
+    const b = e.target.closest('button[data-i]'); if (!b || b.disabled) return;
+    voltarRevisao = false; goStep(+b.dataset.i);
   });
+
+  // ---------- validação (todos os campos são obrigatórios) ----------
+  const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const nomeBase = s => semAcento(s).replace(/\b(lda|limitada|unipessoal|sociedade|s\.?a\.?)\b/g, '').replace(/[^a-z0-9]/g, '');
+  function nifValido(v) {
+    if (!/^\d{9}$/.test(v)) return false;
+    const d = v.split('').map(Number);
+    const soma = d.slice(0, 8).reduce((a, x, i) => a + x * (9 - i), 0);
+    const ctrl = 11 - (soma % 11);
+    return d[8] === (ctrl >= 10 ? 0 : ctrl);
+  }
+  function dataValida(v) {
+    const d = new Date(v);
+    return /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(d) && d < new Date() && d.getFullYear() > 1900;
+  }
+  function marcar(el, chave) {
+    const w = el.closest('.fld'); if (!w) return;
+    el.setAttribute('aria-invalid', 'true');
+    let e = $('.ferr', w);
+    if (!e) { e = document.createElement('div'); e.className = 'ferr'; w.append(e); }
+    e.dataset.k = chave; e.textContent = t(chave);
+  }
+  function limpar(el) {
+    const w = el.closest('.fld'); if (!w) return;
+    $$('[aria-invalid]', w).forEach(x => x.removeAttribute('aria-invalid'));
+    $('.ferr', w)?.remove();
+  }
+  // visível dentro do seu passo (o próprio passo/formulário pode estar escondido durante a revisão)
+  const visivel = el => {
+    for (let p = el; p && p !== form; p = p.parentElement) {
+      if (p.hidden && !p.classList.contains('step')) return false;
+    }
+    return true;
+  };
+
+  function validarPasso(i) {
+    const card = STEPS[i];
+    const erros = [];
+    const err = (el, k) => erros.push([el, k]);
+    $$('.fld', card).forEach(w => { $$('[aria-invalid]', w).forEach(x => x.removeAttribute('aria-invalid')); $('.ferr', w)?.remove(); });
+
+    // obrigatórios visíveis
+    $$('input[required]:not([type=radio]), textarea[required], select[required]', card).filter(visivel).forEach(el => {
+      if (!el.value.trim()) err(el, 'eObrig');
+      else if (el.dataset.nif !== undefined && !nifValido(el.value.trim())) err(el, 'eNif');
+      else if (el.dataset.data !== undefined && !dataValida(el.value)) err(el, 'eData');
+      else if (el.dataset.cp !== undefined && !/^\d{4}-\d{3}$/.test(el.value.trim())) err(el, 'eCp');
+      else if (el.dataset.positivo !== undefined && !(parseFloat(el.value) > 0)) err(el, 'eCapital');
+    });
+    if (i === 0) {
+      const [a, b, c] = ['nomeA', 'nomeB', 'nomeC'].map(n => form[n]);
+      const vistos = [];
+      [a, b, c].forEach(el => {
+        const n = nomeBase(el.value);
+        if (n && vistos.some(x => x === n || x.includes(n) || n.includes(x))) err(el, 'eNomes');
+        if (n) vistos.push(n);
+      });
+    }
+    if (i === 2 && form.capital.value && !(parseFloat(form.capital.value) > 0)) err(form.capital, 'eCapital');
+    if (i === 3 && erros.length === 0 && !quotasBatem()) err($$('#socios [data-f="quota"]').pop(), 'eQuotas');
+    if (i === 4 && !form.temContabilista.value) err($('#contab-radio input'), 'eObrig');
+
+    // um erro por campo
+    const vistosEl = new Set();
+    const unicos = erros.filter(([el]) => !vistosEl.has(el) && vistosEl.add(el));
+    unicos.forEach(([el, k]) => marcar(el, k));
+    return unicos;
+  }
+  form.addEventListener('input', e => {
+    if (e.target.matches('input, textarea, select')) limpar(e.target);
+  });
+  form.addEventListener('change', e => { if (e.target.type === 'radio') limpar(e.target); });
 
   // ---------- sócios ----------
   function addSocio(data = {}) {
     const node = $('#tpl-socio').content.firstElementChild.cloneNode(true);
+    $$('[data-t]', node).forEach(el => el.textContent = t(el.dataset.t));
+    $$('select[data-opts]', node).forEach(popularOpcoes);
     $$('[data-f]', node).forEach(i => { i.value = data[i.dataset.f] ?? ''; });
     $('.rm-socio', node).onclick = () => { node.remove(); renumber(); markDirty(); };
     $('[data-f="estadoCivil"]', node).addEventListener('change', () => toggleConj(node));
@@ -258,22 +416,26 @@
   }
   function renumber() {
     const s = $$('#socios .socio');
-    s.forEach((n, i) => $('.socio-title', n).textContent = `${i + 1}.º Sócio(a)`);
-    $('#n-socios').textContent = String(s.length).padStart(2, '0') + ' (' + extenso(s.length) + ')';
+    s.forEach((n, i) => {
+      $('.socio-title', n).textContent = t('socioN', { i: i + 1 });
+      $('.rm-socio', n).hidden = s.length === 1;   // com um só sócio não se pode remover
+    });
+    $('#n-socios').textContent = t('nSocios', { n: String(s.length).padStart(2, '0') + (lang === 'pt' ? ' (' + extenso(s.length) + ')' : '') });
     checkQuotas();
   }
+  function somaQuotas() {
+    return $$('#socios [data-f="quota"]').map(i => parseFloat(i.value)).filter(v => !isNaN(v)).reduce((a, b) => a + b, 0);
+  }
+  const quotasBatem = () => Math.abs(somaQuotas() - parseFloat(form.capital.value)) < 0.005;
   function checkQuotas() {
     const box = $('#quota-check');
     const cap = parseFloat(form.capital.value);
-    const quotas = $$('#socios [data-f="quota"]').map(i => parseFloat(i.value)).filter(v => !isNaN(v));
-    if (isNaN(cap) || !quotas.length) { box.hidden = true; return; }
-    const sum = quotas.reduce((a, b) => a + b, 0);
+    const preenchidas = $$('#socios [data-f="quota"]').some(i => i.value !== '');
+    if (isNaN(cap) || !preenchidas) { box.hidden = true; return; }
+    const sum = somaQuotas();
     box.hidden = false;
-    if (Math.abs(sum - cap) < 0.005) {
-      box.className = 'warn good'; box.textContent = `Soma das quotas (${eur(sum)}) corresponde ao capital social.`;
-    } else {
-      box.className = 'warn bad'; box.textContent = `Atenção: a soma das quotas (${eur(sum)}) difere do capital social (${eur(cap)}).`;
-    }
+    if (quotasBatem()) { box.className = 'warn good'; box.textContent = t('quotasOk', { s: eur(sum) }); }
+    else { box.className = 'warn bad'; box.textContent = t('quotasMal', { s: eur(sum), c: eur(cap) }); }
   }
 
   // ---------- ler / preencher ----------
@@ -283,65 +445,152 @@
       if (el.type === 'radio') { if (el.checked) d[el.name] = el.value; }
       else d[el.name] = el.value.trim();
     });
+    if (!d.temContabilista) d.temContabilista = '';
     d.socios = $$('#socios .socio').map(n => {
-      const o = {}; $$('[data-f]', n).forEach(i => o[i.dataset.f] = i.value.trim()); return o;
+      const o = {}; $$('[data-f]', n).forEach(i => o[i.dataset.f] = i.value.trim());
+      if (!/Casado|União/.test(o.estadoCivil)) { o.conjuge = ''; o.regime = ''; }
+      return o;
     });
+    if (d.temContabilista !== 'sim') ['contNome', 'contOrdem', 'contNif', 'contMorada'].forEach(k => d[k] = '');
     return d;
   }
   function fill(d) {
     form.reset();
     $('#socios').innerHTML = '';
     $$('input[name], textarea[name], select[name]', form).forEach(el => {
-      if (el.type === 'radio') el.checked = (d[el.name] ?? 'nao') === el.value;
+      if (el.type === 'radio') el.checked = d[el.name] === el.value;
       else el.value = d[el.name] ?? '';
     });
-    (d.socios?.length ? d.socios : [{}, {}]).forEach(s => addSocio(s));
+    (d.socios?.length ? d.socios : [{}]).forEach(s => addSocio(s));
     toggleContab();
     checkQuotas();
   }
   function toggleContab() { $('#contab-fields').hidden = form.temContabilista.value !== 'sim'; }
-  function markDirty() { dirty = true; status('Alterações não guardadas'); }
-  function status(t) { $('#status').textContent = t; }
+  function markDirty() { dirty = true; status(t('naoGuardado')); }
+  function status(txt) { $('#status').textContent = txt; }
 
   // ---------- guardar ----------
+  async function enviar(passos) {
+    return api('guardar', { codigo, dados: read(), passos: [...passos] });
+  }
+  function mensagemErro(err) {
+    if (/submetido/i.test(err.message)) { submetido = true; showDone(); return t('jaSubmetido'); }
+    if (/ligação/i.test(err.message)) return t('semLigacao');
+    return err.message;
+  }
+
   form.addEventListener('submit', async e => {
     e.preventDefault();
     if (saving) return;
-    const msg = validateStep();
-    if (msg) { $('#step-err').textContent = msg; $('#step-err').hidden = false; return; }
-    const passos = new Set(doneSteps).add(step);
-    const btn = $('#btn-next'), label = btn.textContent;
-    saving = true; btn.disabled = true; btn.textContent = 'A guardar…';
+    const erros = validarPasso(step);
+    if (erros.length) {
+      $('#step-err').textContent = t('ePasso'); $('#step-err').hidden = false;
+      erros[0][0].focus();
+      return;
+    }
+    $('#step-err').hidden = true;
+    const novos = new Set(doneSteps).add(step);
+    // o último passo só fica "concluído" no servidor depois de submeter na revisão
+    const paraServidor = [...novos].filter(i => i !== N - 1);
+    const btn = $('#btn-next');
+    saving = true; btn.disabled = true; btn.textContent = t('aGuardar');
     try {
-      await api('guardar', { codigo, dados: read(), passos: [...passos] });
-      doneSteps = passos; dirty = false;
-      status('Guardado às ' + new Date().toLocaleTimeString('pt-PT', { timeStyle: 'short' }));
-      if (step < STEPS.length - 1) { toast('Respostas guardadas'); goStep(step + 1); }
-      else {
-        const next = STEPS.findIndex((_, i) => !doneSteps.has(i));
-        if (next === -1) { toast('Formulário enviado ao escritório'); showDone(); }
-        else { toast('Falta concluir: ' + STEPS[next].dataset.title); goStep(next); }
-      }
+      await enviar(paraServidor);
+      doneSteps = novos; dirty = false;
+      status(t('guardadoAs', { h: new Date().toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }) }));
+      toast(t('respostasGuardadas'));
+      const falta = STEPS.findIndex((_, i) => !doneSteps.has(i));
+      if (falta === -1 && (voltarRevisao || step === N - 1)) showReview();
+      else if (falta !== -1 && (voltarRevisao || step === N - 1)) { voltarRevisao = false; goStep(falta); }
+      else goStep(step + 1);
     } catch (err) {
-      $('#step-err').textContent = 'Não foi possível guardar: ' + err.message;
-      $('#step-err').hidden = false;
+      const msg = mensagemErro(err);
+      $('#step-err').textContent = t('erroGuardar', { e: msg }); $('#step-err').hidden = false;
     } finally {
-      saving = false; btn.disabled = false;
-      if (btn.textContent === 'A guardar…') btn.textContent = label;
+      saving = false; btn.disabled = false; atualizarBotoes();
     }
   });
 
+  // ---------- revisão ----------
+  function showReview(soLeitura = false) {
+    // garante que nenhum passo ficou inválido (ex.: saltou passos)
+    if (!soLeitura) {
+      for (let i = 0; i < N; i++) {
+        if (validarPasso(i).length) { voltarRevisao = false; goStep(i); $('#step-err').textContent = t('ePasso'); $('#step-err').hidden = false; return; }
+      }
+    }
+    $('#rev-actions').hidden = soLeitura;
+    $('#rev-actions-ro').hidden = !soLeitura;
+    $('#rev-p').hidden = soLeitura;
+    $('#rev-err').hidden = true;
+    voltarRevisao = false;
+    mostrar('review');
+    renderReview();
+  }
+  const esc = DNA.esc;
+  const fmtNasc = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}/${m[2]}/${m[1]}` : v || ''; };
+  const linha = (k, v) => `<dt>${esc(t(k))}</dt><dd>${esc(v || '—')}</dd>`;
+  function secao(i, corpo) {
+    const so = !$('#rev-actions-ro').hidden;
+    return `<div class="rev-sec"><div class="rev-head"><h3><span class="n">${i + 1}</span> ${esc(t('h' + (i + 1)))}</h3>
+      ${so ? '' : `<button type="button" class="btn small" data-edit="${i}">${esc(t('editar'))}</button>`}</div>${corpo}</div>`;
+  }
+  function renderReview() {
+    const d = read();
+    const ec = t('ec'), rg = t('rg');
+    const socios = d.socios.map((s, i) => `<div class="rev-sub">${esc(t('socioN', { i: i + 1 }))}</div><dl class="rev-grid">
+      ${linha('nome', s.nome)}${linha('nascimento', fmtNasc(s.nascimento))}${linha('estadoCivil', ec[s.estadoCivil] || s.estadoCivil)}
+      ${/Casado|União/.test(s.estadoCivil) ? linha('conjuge', s.conjuge) + linha('regime', rg[s.regime] || s.regime) : ''}
+      ${linha('nif', s.nif)}${linha('quota', eur(parseFloat(s.quota)))}${linha('morada', s.morada)}</dl>`).join('');
+    const temC = d.temContabilista === 'sim';
+    $('#rev-body').innerHTML =
+      secao(0, `<dl class="rev-grid"><dt>A</dt><dd>${esc(d.nomeA)}</dd><dt>B</dt><dd>${esc(d.nomeB)}</dd><dt>C</dt><dd>${esc(d.nomeC)}</dd></dl>`) +
+      secao(1, `<dl class="rev-grid" style="grid-template-columns:1fr"><dd>${esc(d.atividades)}</dd></dl>`) +
+      secao(2, `<dl class="rev-grid">${linha('capital', eur(parseFloat(d.capital)))}</dl>`) +
+      secao(3, `<div class="c-sub">${esc(t('nSocios', { n: String(d.socios.length).padStart(2, '0') }))}</div>${socios}`) +
+      secao(4, `<dl class="rev-grid"><dt>${esc(t('h5'))}</dt><dd>${esc(temC ? t('sim') : t('nao'))}</dd>
+        ${temC ? linha('contNome', d.contNome) + linha('contOrdem', d.contOrdem) + linha('contNif', d.contNif) + linha('contMorada', d.contMorada) : ''}</dl>`) +
+      secao(5, `<dl class="rev-grid">${linha('rua', d.empRua)}${linha('freguesia', d.empFreguesia)}${linha('concelho', d.empConcelho)}
+        ${linha('distrito', d.empDistrito)}${linha('cp', d.empCP)}</dl>`);
+  }
+  $('#rev-body').addEventListener('click', e => {
+    const b = e.target.closest('[data-edit]'); if (!b) return;
+    voltarRevisao = true; goStep(+b.dataset.edit);
+  });
+  $('#btn-rev-editar').onclick = () => { voltarRevisao = false; goStep(0); };
+  $('#btn-rev-fechar').onclick = () => showDone();
+  $('#btn-submeter').onclick = async () => {
+    const btn = $('#btn-submeter');
+    btn.disabled = true; btn.textContent = t('aSubmeter');
+    try {
+      await enviar(STEPS.map((_, i) => i));
+      submetido = true; dirty = false;
+      showDone();
+    } catch (err) {
+      const msg = mensagemErro(err);
+      if (!submetido) { $('#rev-err').textContent = t('erroGuardar', { e: msg }); $('#rev-err').hidden = false; }
+    } finally {
+      btn.disabled = false; btn.textContent = t('submeter');
+    }
+  };
+
+  // ---------- fim ----------
+  function showDone() { mostrar('done'); }
+  $('#btn-pdf').onclick = () => gerarPdf(read());
+  $('#btn-ver').onclick = () => showReview(true);
+
+  // ---------- outros eventos ----------
   form.addEventListener('input', e => {
     markDirty();
     if (e.target.name === 'capital' || e.target.dataset.f === 'quota') checkQuotas();
   });
   form.addEventListener('change', e => { if (e.target.name === 'temContabilista') toggleContab(); });
-  $('#btn-back').onclick = () => goStep(step - 1);
-  $('#add-socio').onclick = () => { addSocio(); markDirty(); };
-  $('#btn-review').onclick = () => goStep(0);
-  $('#btn-pdf').onclick = () => gerarPdf(read());
-  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+  $('#btn-back').onclick = () => { voltarRevisao = false; goStep(step - 1); };
+  $('#add-socio').onclick = () => { addSocio(); markDirty(); $$('#socios .socio').pop().querySelector('input').focus(); };
+  window.addEventListener('beforeunload', e => { if (dirty && !submetido) { e.preventDefault(); e.returnValue = ''; } });
 
+  lang = escolherIdiomaInicial();
+  aplicarIdioma();
   carregar();
 })();
 </script>

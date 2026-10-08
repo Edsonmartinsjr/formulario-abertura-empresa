@@ -153,6 +153,8 @@
         <p>O cliente recebe por e-mail o link individual para preencher o formulário.</p>
         <div class="field"><label for="mn-nome">Nome do cliente</label><input id="mn-nome" required placeholder="Ex.: Gutenberg Menezes"></div>
         <div class="field"><label for="mn-email">E-mail do cliente</label><input id="mn-email" type="email" required placeholder="cliente@exemplo.com" autocomplete="off"></div>
+        <div class="field"><label for="mn-idioma">Idioma do cliente</label><select id="mn-idioma">
+          <option value="pt">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
         <div class="err" id="mn-err" hidden></div>
       </div>
       <div class="modal-foot">
@@ -185,6 +187,8 @@
       <h2 id="me-titulo">Enviar link por e-mail</h2>
       <p>Envia o link do formulário de <strong id="me-cliente"></strong> para o e-mail abaixo.</p>
       <div class="field"><label for="me-email">E-mail do cliente</label><input id="me-email" type="email" required autocomplete="off"></div>
+      <div class="field"><label for="me-idioma">Idioma do cliente</label><select id="me-idioma">
+          <option value="pt">Português</option><option value="en">English</option><option value="es">Español</option></select></div>
       <div class="err" id="me-err" hidden></div>
     </div>
     <div class="modal-foot">
@@ -226,8 +230,8 @@
   DNA.montarCabecalho();
   try { chave = localStorage.getItem(KEY) || ''; } catch {}
 
-  const linkDe = codigo => (DNA.DEMO || !window.LINK_BASE ? new URL('./', location.href).href : window.LINK_BASE)
-    + '?c=' + encodeURIComponent(codigo);
+  const linkDe = (codigo, idioma) => (DNA.DEMO || !window.LINK_BASE ? new URL('./', location.href).href : window.LINK_BASE)
+    + '?c=' + encodeURIComponent(codigo) + (idioma && idioma !== 'pt' ? '&l=' + idioma : '');
 
   // ---------- entrada ----------
   function mostrarLogin(msg) {
@@ -293,7 +297,7 @@
       const socios = (r.dados?.socios || []).map(s => s.nome).filter(Boolean).join(', ');
       const empresa = titulo(r.dados);
       return `<tr data-c="${esc(r.codigo)}">
-        <td><div class="c-nome">${esc(r.cliente || 'Cliente sem nome')}</div><div class="c-sub">${esc(r.email || 'sem e-mail')}</div></td>
+        <td><div class="c-nome">${esc(r.cliente || 'Cliente sem nome')}</div><div class="c-sub">${esc(r.email || 'sem e-mail')}${r.idioma && r.idioma !== 'pt' ? ' · ' + r.idioma.toUpperCase() : ''}</div></td>
         <td data-l="Empresa">${empresa ? esc(empresa) : '<span class="c-sub">—</span>'}${socios ? `<div class="c-sub">Sócios: ${esc(socios)}</div>` : ''}</td>
         <td>${estadoTag(r)}<span class="mini-bar" title="${pct}%"><i style="width:${pct}%"></i></span></td>
         <td data-l="Atualizado" class="c-sub" style="white-space:nowrap">${fmtData(r.atualizado)}</td>
@@ -324,16 +328,16 @@
       m.className = 'menu'; m.setAttribute('role', 'menu');
       m.innerHTML = `
         <button data-act="copiar">Copiar link</button>
-        <a href="${esc(linkDe(r.codigo))}" target="_blank" rel="noopener">Abrir formulário</a>
+        <a href="${esc(linkDe(r.codigo, r.idioma))}" target="_blank" rel="noopener">Abrir formulário</a>
         <button data-act="email">${r.email ? 'Reenviar link por e-mail' : 'Enviar link por e-mail'}</button>
-        <a href="https://wa.me/?text=${encodeURIComponent(msgCliente(r.cliente, linkDe(r.codigo)))}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+        <a href="https://wa.me/?text=${encodeURIComponent(msgCliente(r.cliente, linkDe(r.codigo, r.idioma)))}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
         ${r.documento ? `<a href="${esc(r.documento)}" target="_blank" rel="noopener">Abrir documento</a>` : ''}
         <hr><button data-act="apagar" class="danger">Apagar…</button>`;
       b.parentElement.append(m); menuAberto = m;
       return;
     }
     fecharMenu();
-    if (act === 'copiar') copiar(linkDe(r.codigo));
+    if (act === 'copiar') copiar(linkDe(r.codigo, r.idioma));
     else if (act === 'email') abrirEmail(r);
     else if (act === 'apagar') abrirApagar(r);
   });
@@ -358,7 +362,7 @@
   // ---------- novo link ----------
   $('#btn-novo').onclick = () => {
     $('#mn-passo1').hidden = false; $('#mn-passo2').hidden = true;
-    $('#mn-nome').value = ''; $('#mn-email').value = ''; $('#mn-err').hidden = true;
+    $('#mn-nome').value = ''; $('#mn-email').value = ''; $('#mn-idioma').value = 'pt'; $('#mn-err').hidden = true;
     $('#mn-ok').disabled = false; $('#mn-ok').textContent = 'Criar e enviar';
     $('#modal-novo').showModal(); $('#mn-nome').focus();
   };
@@ -370,9 +374,10 @@
     if (erro) { $('#mn-err').textContent = erro; $('#mn-err').hidden = false; return; }
     const ok = $('#mn-ok'); ok.disabled = true; ok.textContent = 'A criar e enviar…'; $('#mn-err').hidden = true;
     try {
-      const res = await api('criar', { chave, cliente, email });
+      const idioma = $('#mn-idioma').value;
+      const res = await api('criar', { chave, cliente, email, idioma });
       registos.unshift(res.registo); render();
-      const link = linkDe(res.registo.codigo);
+      const link = linkDe(res.registo.codigo, idioma);
       $('#mn-link').value = link;
       $('#mn-whats').href = 'https://wa.me/?text=' + encodeURIComponent(msgCliente(cliente, link));
       $('#mn-res').innerHTML = res.emailEnviado
@@ -395,6 +400,7 @@
     $('#me-cliente').textContent = r.cliente || 'cliente sem nome';
     $('#me-titulo').textContent = r.email ? 'Reenviar link por e-mail' : 'Enviar link por e-mail';
     $('#me-email').value = r.email || '';
+    $('#me-idioma').value = r.idioma || 'pt';
     $('#me-err').hidden = true; $('#me-ok').disabled = false; $('#me-ok').textContent = 'Enviar';
     $('#modal-email').showModal(); $('#me-email').focus();
   }
@@ -404,8 +410,9 @@
     if (!emailOk(email)) { $('#me-err').textContent = 'Indique um e-mail válido.'; $('#me-err').hidden = false; return; }
     const ok = $('#me-ok'); ok.disabled = true; ok.textContent = 'A enviar…';
     try {
-      const { registo } = await api('reenviar', { chave, codigo: emEnvio.codigo, email });
-      Object.assign(emEnvio, { email: registo.email || email }); render();
+      const idioma = $('#me-idioma').value;
+      const { registo } = await api('reenviar', { chave, codigo: emEnvio.codigo, email, idioma });
+      Object.assign(emEnvio, { email: registo.email || email, idioma }); render();
       $('#modal-email').close(); toast('Link enviado para ' + email);
     } catch (err) {
       $('#me-err').textContent = err.message; $('#me-err').hidden = false;
