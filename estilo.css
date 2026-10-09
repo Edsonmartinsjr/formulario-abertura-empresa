@@ -38,6 +38,18 @@
     --header-bg: #1f1f1f; --header-ink: #ececec; --header-muted: #a0a0a5;
   }
 }
+/* Tema "violeta" (neon): fundo escuro arroxeado e destaques violeta com brilho.
+   Sempre escuro — o efeito neon só funciona sobre fundo escuro. */
+:root[data-tema="violeta"] {
+  color-scheme: dark;
+  --bg: #0b0714; --surface: #140d24; --ink: #f3eefe; --muted: #a99cc4; --line: #2d2247;
+  --accent: #b14dff; --accent-soft: #1e1533; --gold: #b14dff; --grey: #a99cc4;
+  --header-bg: #07040e; --header-ink: #ffffff; --header-muted: #b9a8dc;
+  --danger: #ff5c8a; --ok: #3ef0a5;
+  --neon: 177, 77, 255;          /* violeta em RGB, para os brilhos */
+  --neon2: 214, 120, 255;        /* violeta claro */
+}
+
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
@@ -183,3 +195,83 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 .doc .box { border: 1px solid #999; padding: 6px 8px; font-family: Arial, sans-serif; font-size: 10.5pt; white-space: pre-wrap; min-height: 3em; }
 .doc .dfoot { display: flex; justify-content: space-between; gap: 20px; border-top: 1.5px solid #111; margin-top: 18px; padding-top: 6px; font-family: Arial, sans-serif; font-size: 7pt; font-weight: bold; line-height: 1.35; }
 .doc .stamp { font-family: Arial, sans-serif; font-size: 8pt; color: #666; text-align: right; margin-top: 10px; }
+
+/* ===== Efeito neon (só no tema violeta) ===== */
+[data-tema="violeta"] body {
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(var(--neon), .18), transparent 60%),
+    radial-gradient(700px 500px at 110% 10%, rgba(var(--neon2), .10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+[data-tema="violeta"] header.top {
+  border-bottom: 1px solid rgba(var(--neon), .9);
+  box-shadow: 0 0 14px rgba(var(--neon), .55), 0 0 40px rgba(var(--neon), .25);
+}
+[data-tema="violeta"] .logo { filter: drop-shadow(0 0 4px rgba(var(--neon2), .9)) drop-shadow(0 0 12px rgba(var(--neon), .6)); }
+[data-tema="violeta"] .brand b { text-shadow: 0 0 6px rgba(var(--neon2), .8), 0 0 18px rgba(var(--neon), .5); }
+[data-tema="violeta"] h1 { text-shadow: 0 0 18px rgba(var(--neon), .45); }
+[data-tema="violeta"] .card h2 .n,
+[data-tema="violeta"] .progress-top .pct { color: #d9a6ff; text-shadow: 0 0 8px rgba(var(--neon), .9); }
+
+[data-tema="violeta"] .card,
+[data-tema="violeta"] .progress,
+[data-tema="violeta"] .table-wrap,
+[data-tema="violeta"] .hist-item {
+  border-color: rgba(var(--neon), .35);
+  box-shadow: 0 0 0 1px rgba(var(--neon), .08), 0 0 22px rgba(var(--neon), .12), inset 0 0 30px rgba(var(--neon), .04);
+}
+
+[data-tema="violeta"] .btn { border-color: rgba(var(--neon), .35); }
+[data-tema="violeta"] .btn:hover { background: rgba(var(--neon), .12); box-shadow: 0 0 10px rgba(var(--neon), .35); }
+[data-tema="violeta"] .btn.primary,
+[data-tema="violeta"] .btn.accent,
+[data-tema="violeta"] header.top .btn.primary {
+  background: linear-gradient(135deg, #8f2bff, #c86bff); border-color: transparent; color: #fff;
+  box-shadow: 0 0 10px rgba(var(--neon), .7), 0 0 26px rgba(var(--neon), .35);
+  text-shadow: 0 0 6px rgba(255, 255, 255, .45);
+}
+[data-tema="violeta"] .btn.primary:hover,
+[data-tema="violeta"] .btn.accent:hover {
+  opacity: 1; box-shadow: 0 0 14px rgba(var(--neon2), .95), 0 0 40px rgba(var(--neon), .55);
+}
+[data-tema="violeta"] .btn.danger { color: var(--danger); }
+
+[data-tema="violeta"] .bar { background: rgba(var(--neon), .12); }
+[data-tema="violeta"] .bar > div,
+[data-tema="violeta"] .mini-bar i {
+  background: linear-gradient(90deg, #8f2bff, #d678ff);
+  box-shadow: 0 0 8px rgba(var(--neon2), .9), 0 0 20px rgba(var(--neon), .6);
+}
+[data-tema="violeta"] .steps button.done .dot {
+  background: #a33dff; border-color: #d678ff; box-shadow: 0 0 8px rgba(var(--neon2), .9);
+}
+[data-tema="violeta"] .steps button.current .dot { border-color: #d678ff; box-shadow: 0 0 8px rgba(var(--neon), .7); color: #fff; }
+[data-tema="violeta"] .center-card .check { background: #a33dff; box-shadow: 0 0 14px rgba(var(--neon2), .9), 0 0 40px rgba(var(--neon), .5); }
+
+[data-tema="violeta"] input,
+[data-tema="violeta"] select,
+[data-tema="violeta"] textarea { background: #0f0a1c; border-color: #33284f; }
+[data-tema="violeta"] input:focus,
+[data-tema="violeta"] select:focus,
+[data-tema="violeta"] textarea:focus {
+  outline: 1px solid #d678ff; border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(var(--neon), .25), 0 0 16px rgba(var(--neon), .45);
+}
+[data-tema="violeta"] .note { background: rgba(var(--neon), .10); border-left-color: #c86bff; box-shadow: inset 3px 0 10px -6px rgba(var(--neon), .9); }
+[data-tema="violeta"] .tag.new { background: rgba(var(--neon), .16); color: #dcb4ff; box-shadow: 0 0 8px rgba(var(--neon), .3); }
+[data-tema="violeta"] .tag.ok { box-shadow: 0 0 8px rgba(62, 240, 165, .25); }
+[data-tema="violeta"] .toast { background: #a33dff; color: #fff; box-shadow: 0 0 16px rgba(var(--neon), .8); }
+[data-tema="violeta"] .demo { background: #2a1846; color: #e6d3ff; }
+[data-tema="violeta"] .actions { background: transparent; backdrop-filter: blur(6px); }
+[data-tema="violeta"] dialog.modal { border-color: rgba(var(--neon), .5); box-shadow: 0 0 30px rgba(var(--neon), .35), 0 20px 60px rgba(0,0,0,.6); }
+[data-tema="violeta"] .lang button[aria-pressed="true"] { background: #a33dff; box-shadow: 0 0 10px rgba(var(--neon), .8); }
+[data-tema="violeta"] ::selection { background: rgba(var(--neon), .45); }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-tema="violeta"] .btn.primary { animation: pulso 3.2s ease-in-out infinite; }
+  @keyframes pulso {
+    0%, 100% { box-shadow: 0 0 10px rgba(var(--neon), .7), 0 0 26px rgba(var(--neon), .35); }
+    50%      { box-shadow: 0 0 14px rgba(var(--neon2), .9), 0 0 36px rgba(var(--neon), .5); }
+  }
+}

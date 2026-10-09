@@ -219,20 +219,20 @@ function emailAvisos_() {
 
 const esc_ = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-/** Moldura HTML comum aos e-mails (preto, branco, cinza e laranja). */
+/** Moldura HTML comum aos e-mails (preto e violeta). */
 function moldura_(conteudo) {
   return '<div style="background:#f2f2f1;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;color:#111">' +
     '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e2e0dd">' +
-    '<div style="background:#111;padding:18px 24px;color:#fff;letter-spacing:4px;font-size:16px">DANIELA NEVES' +
-    '<div style="letter-spacing:4px;font-size:9px;color:#a6a19b;margin-top:2px">ADVOCACIA</div></div>' +
-    '<div style="height:4px;background:#c4561a"></div>' +
+    '<div style="background:#0b0714;padding:18px 24px;color:#fff;letter-spacing:4px;font-size:16px">DANIELA NEVES' +
+    '<div style="letter-spacing:4px;font-size:9px;color:#b9a8dc;margin-top:2px">ADVOCACIA</div></div>' +
+    '<div style="height:3px;background:linear-gradient(90deg,#8f2bff,#d678ff)"></div>' +
     '<div style="padding:24px;font-size:15px;line-height:1.55">' + conteudo + '</div>' +
     '<div style="padding:14px 24px;background:#f7f7f6;color:#77736e;font-size:11px;line-height:1.5">' +
     'Daniela Neves Advocacia · Lisboa · Santos/SP<br>danielaneves-47953L@adv.oa.pt · +351 911011282</div>' +
     '</div></div>';
 }
 function botao_(url, texto) {
-  return '<p style="margin:22px 0"><a href="' + esc_(url) + '" style="background:#c4561a;color:#fff;text-decoration:none;' +
+  return '<p style="margin:22px 0"><a href="' + esc_(url) + '" style="background:#9d3cff;color:#fff;text-decoration:none;' +
     'padding:12px 22px;border-radius:8px;font-weight:bold;display:inline-block">' + esc_(texto) + '</a></p>';
 }
 
@@ -264,7 +264,7 @@ function enviarLink_(v) {
     '<p>' + T.corpo + '</p>' +
     botao_(link, T.botao) +
     '<p style="font-size:13px;color:#77736e">' + T.alt + '<br>' +
-    '<a href="' + esc_(link) + '" style="color:#c4561a">' + esc_(link) + '</a></p>' +
+    '<a href="' + esc_(link) + '" style="color:#9d3cff">' + esc_(link) + '</a></p>' +
     '<p>' + T.fim + '</p><p>' + T.cumpr + '<br>Daniela Neves Advocacia</p>');
   MailApp.sendEmail({
     to: email,
@@ -290,7 +290,7 @@ function avisarEscritorio_(v) {
     '<tr><td style="color:#77736e;padding:3px 12px 3px 0">Capital social</td><td>' + esc_(eur_(d.capital) || '—') + '</td></tr>' +
     '</table>' +
     (doc ? botao_(doc, 'Abrir o documento') : '') +
-    '<p style="font-size:13px"><a href="' + SITE + 'escritorio.html" style="color:#c4561a">Abrir o painel do escritório</a></p>');
+    '<p style="font-size:13px"><a href="' + SITE + 'escritorio.html" style="color:#9d3cff">Abrir o painel do escritório</a></p>');
   MailApp.sendEmail({
     to: emailAvisos_(),
     subject: 'Formulário concluído: ' + cliente + (d.nomeA ? ' – ' + d.nomeA : ''),
