@@ -137,7 +137,7 @@
     <div class="table-wrap">
       <table class="forms">
         <thead><tr><th>Cliente</th><th>Empresa</th><th>Estado</th><th>Atualizado</th><th></th></tr></thead>
-        <tbody id="lista"><tr><td colspan="5"><div class="empty">A carregar…</div></td></tr></tbody>
+        <tbody id="lista"></tbody>
       </table>
     </div>
   </section>
@@ -262,10 +262,14 @@
   // ---------- lista ----------
   async function carregar() {
     const btn = $('#btn-atualizar'); btn.disabled = true;
+    $('#lista').innerHTML = '<tr><td colspan="5" id="carregando"></td></tr>';
+    const barra = DNA.loader($('#carregando'), 'Carregando...');
     try {
       registos = (await api('listar', { chave })).registos;
+      await barra.fim();
       render();
     } catch (err) {
+      barra.parar();
       if (/chave/i.test(err.message)) return mostrarLogin(err.message);
       $('#lista').innerHTML = `<tr><td colspan="5"><div class="empty">${esc(err.message)}</div></td></tr>`;
     } finally { btn.disabled = false; }

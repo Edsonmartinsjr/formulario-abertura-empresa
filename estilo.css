@@ -13,6 +13,7 @@
   --header-bg: #111111;
   --header-ink: #ffffff;
   --header-muted: #a6a19b;
+  --neon: 196, 86, 26; --neon2: 224, 112, 46;
   --danger: #b3261e;
   --ok: #2e7d4f;
   --radius: 10px;
@@ -30,6 +31,7 @@
   --bg: #f5f4f1; --surface: #ffffff; --ink: #1d1d1f; --muted: #6b6b70; --line: #e2e0db;
   --accent: #2b2b2b; --accent-soft: #efeeea; --gold: #9a7b4f;
   --header-bg: #ffffff; --header-ink: #1d1d1f; --header-muted: #6b6b70;
+  --neon: 154, 123, 79; --neon2: 201, 168, 116;
 }
 @media (prefers-color-scheme: dark) {
   :root[data-tema="dourado"]:not([data-theme="light"]) {
@@ -275,3 +277,35 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
     50%      { box-shadow: 0 0 14px rgba(var(--neon2), .9), 0 0 36px rgba(var(--neon), .5); }
   }
 }
+
+/* ===== Barra de carregamento (estilo neon, usa a cor do tema) ===== */
+.loader { max-width: 460px; margin: 36px auto; padding: 0 8px; text-align: center; }
+.loader-txt {
+  color: var(--ink); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; font-size: 13px;
+  margin-bottom: 18px; text-shadow: 0 0 10px rgba(var(--neon), .7);
+  animation: piscar 1.6s ease-in-out infinite;
+}
+@keyframes piscar { 50% { opacity: .55; } }
+.loader-bar {
+  position: relative; height: 34px; border: 2px solid rgb(var(--neon2)); border-radius: 999px;
+  box-shadow: 0 0 8px rgba(var(--neon), .85), 0 0 22px rgba(var(--neon), .35), inset 0 0 8px rgba(var(--neon), .35);
+}
+.loader-bar::before, .loader-bar::after {
+  content: ""; position: absolute; left: 18%; right: 18%; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--neon2), .95), transparent); filter: blur(1.5px);
+}
+.loader-bar::before { top: -11px; }
+.loader-bar::after { bottom: -11px; }
+.loader-track { position: absolute; inset: 3px; }
+.loader-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px 0 0 999px;
+  background: linear-gradient(90deg, rgba(var(--neon), 0), rgba(var(--neon), .35) 45%, rgb(var(--neon2)));
+  transition: width .25s ease;
+}
+.loader-fill.cheio { border-radius: 999px; }
+.loader-pct {
+  position: absolute; top: 50%; transform: translateY(-50%); left: 12px; transition: left .25s ease;
+  font-weight: 700; font-size: 14px; color: rgb(var(--neon2)); text-shadow: 0 0 8px rgba(var(--neon), .9);
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) { .loader-txt { animation: none; } .loader-fill, .loader-pct { transition: none; } }

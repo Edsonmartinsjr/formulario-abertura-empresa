@@ -60,6 +60,8 @@
   <p class="lead" id="lead"></p>
   <p class="req-note" id="req-note" data-t="obrigatorios" hidden></p>
 
+  <div id="loading"></div>
+
   <!-- link inválido / erro ao carregar -->
   <div class="card center-card" id="aviso" hidden>
     <h2 id="aviso-titulo"></h2>
@@ -262,9 +264,12 @@
   }
   async function carregar() {
     if (!codigo) { aviso(t('linkIncompletoT'), t('linkIncompleto')); return; }
-    $('#aviso').hidden = true; $('#lead').textContent = t('carregando');
+    $('#aviso').hidden = true; $('#lead').textContent = '';
+    const barra = DNA.loader($('#loading'), t('carregando'));
     try {
       const { registo } = await api('obter', { codigo });
+      await barra.fim();
+      $('#loading').innerHTML = '';
       lang = escolherIdiomaInicial(registo.idioma);
       cliente = registo.cliente || '';
       fill(registo.dados || {});
@@ -277,6 +282,7 @@
       const next = STEPS.findIndex((_, i) => !doneSteps.has(i));
       goStep(next === -1 ? N - 1 : next);
     } catch (e) {
+      barra.parar(); $('#loading').innerHTML = '';
       if (/inválido/i.test(e.message)) aviso(t('linkInvalidoT'), t('linkInvalido'));
       else aviso(t('erroCarregarT'), /ligação/i.test(e.message) ? t('semLigacao') : e.message, true);
     }

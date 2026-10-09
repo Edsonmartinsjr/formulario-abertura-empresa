@@ -166,5 +166,30 @@
     }
   }
 
-  window.DNA = { DEMO, TOTAL_PASSOS, logo, esc, eur, fmtData, extenso, titulo, buildDoc, gerarPdf, toast, api, montarCabecalho };
+  // ---------- barra de carregamento ----------
+  // Avança sozinha até ~92% enquanto espera; `fim()` completa os 100%.
+  function loader(el, texto) {
+    el.innerHTML = `<div class="loader" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="${esc(texto)}">
+      <div class="loader-txt">${esc(texto)}</div>
+      <div class="loader-bar"><div class="loader-track"><div class="loader-fill"></div><span class="loader-pct">0%</span></div></div></div>`;
+    const raiz = el.querySelector('.loader'), fill = el.querySelector('.loader-fill'), pct = el.querySelector('.loader-pct');
+    let p = 0;
+    const set = v => {
+      p = Math.min(100, v);
+      fill.style.width = p + '%';
+      fill.classList.toggle('cheio', p >= 100);
+      pct.textContent = Math.round(p) + '%';
+      pct.style.left = `calc(${p}% + 12px)`;
+      pct.hidden = p > 86;
+      raiz.setAttribute('aria-valuenow', Math.round(p));
+    };
+    set(4);
+    const timer = setInterval(() => set(p + (92 - p) * 0.035), 120);
+    return {
+      async fim() { clearInterval(timer); set(100); await new Promise(r => setTimeout(r, 380)); },
+      parar() { clearInterval(timer); }
+    };
+  }
+
+  window.DNA = { DEMO, loader, TOTAL_PASSOS, logo, esc, eur, fmtData, extenso, titulo, buildDoc, gerarPdf, toast, api, montarCabecalho };
 })();

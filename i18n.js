@@ -4,7 +4,7 @@
 window.I18N = {
   pt: {
     titulo: 'Formulário para a abertura da empresa',
-    carregando: 'A carregar…',
+    carregando: 'Carregando...',
     leadCliente: 'Formulário de {n}',
     leadGeral: 'Preencha cada passo e carregue em "Guardar e avançar".',
     obrigatorios: 'Todos os campos são de preenchimento obrigatório.',
@@ -81,7 +81,7 @@ window.I18N = {
 
   en: {
     titulo: 'Company incorporation form',
-    carregando: 'Loading…',
+    carregando: 'Loading...',
     leadCliente: 'Form for {n}',
     leadGeral: 'Fill in each step and click "Save and continue".',
     obrigatorios: 'All fields are required.',
@@ -158,7 +158,7 @@ window.I18N = {
 
   es: {
     titulo: 'Formulario para la constitución de la empresa',
-    carregando: 'Cargando…',
+    carregando: 'Cargando...',
     leadCliente: 'Formulario de {n}',
     leadGeral: 'Complete cada paso y pulse "Guardar y continuar".',
     obrigatorios: 'Todos los campos son obligatorios.',
