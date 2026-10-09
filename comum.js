@@ -3,10 +3,49 @@
   const DEMO = !window.SCRIPT_URL;
 
   // Tema de cores: config.js (window.TEMA) ou ?tema=laranja|dourado para pré-visualizar.
+  const raiz = document.documentElement;
   try {
     const t = new URLSearchParams(location.search).get('tema') || window.TEMA;
-    if (t && t !== 'laranja') document.documentElement.dataset.tema = t;
+    if (t && t !== 'laranja') raiz.dataset.tema = t;
   } catch {}
+
+  // Modo diurno/noturno: escolha guardada neste navegador. Sem escolha, o violeta é noturno
+  // e os outros temas seguem o sistema. Aplicado já aqui (no <head>) para não piscar.
+  const MODO_KEY = 'dna-modo';
+  const modoAtual = () => {
+    let m = null;
+    try { m = localStorage.getItem(MODO_KEY); } catch {}
+    if (m === 'claro' || m === 'escuro') return m;
+    if (raiz.dataset.tema === 'violeta') return 'escuro';
+    return matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+  };
+  const aplicarModo = m => { raiz.dataset.theme = m === 'claro' ? 'light' : 'dark'; };
+  aplicarModo(modoAtual());
+
+  const ICONE_SOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>';
+  const ICONE_LUA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a7 7 0 0 0 10.7 10.7z"/></svg>';
+  const ROTULOS = { pt: ['Mudar para modo diurno', 'Mudar para modo noturno'],
+                    en: ['Switch to light mode', 'Switch to dark mode'],
+                    es: ['Cambiar a modo claro', 'Cambiar a modo oscuro'] };
+  // No modo noturno mostra o sol (passar a diurno); no diurno mostra a lua.
+  function rotularModo() {
+    const b = document.getElementById('modo-btn'); if (!b) return;
+    const escuro = modoAtual() === 'escuro';
+    const r = ROTULOS[(raiz.lang || 'pt').slice(0, 2)] || ROTULOS.pt;
+    b.innerHTML = escuro ? ICONE_SOL : ICONE_LUA;
+    b.title = escuro ? r[0] : r[1];
+    b.setAttribute('aria-label', b.title);
+  }
+  function botaoModo() {
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'modo-btn'; b.className = 'modo-btn';
+    b.onclick = () => {
+      const novo = modoAtual() === 'escuro' ? 'claro' : 'escuro';
+      try { localStorage.setItem(MODO_KEY, novo); } catch {}
+      aplicarModo(novo); rotularModo();
+    };
+    return b;
+  }
   const TOTAL_PASSOS = 6;
 
   // ---------- logótipo DN (vetorial) ----------
@@ -158,6 +197,8 @@
   function montarCabecalho() {
     const slot = document.querySelector('.logo-slot');
     if (slot) slot.outerHTML = logo();
+    const brand = document.querySelector('header.top .brand');
+    if (brand && !document.getElementById('modo-btn')) { brand.after(botaoModo()); rotularModo(); }
     if (DEMO) {
       const b = document.createElement('div');
       b.className = 'demo';
@@ -191,5 +232,5 @@
     };
   }
 
-  window.DNA = { DEMO, loader, TOTAL_PASSOS, logo, esc, eur, fmtData, extenso, titulo, buildDoc, gerarPdf, toast, api, montarCabecalho };
+  window.DNA = { DEMO, loader, rotularModo, TOTAL_PASSOS, logo, esc, eur, fmtData, extenso, titulo, buildDoc, gerarPdf, toast, api, montarCabecalho };
 })();

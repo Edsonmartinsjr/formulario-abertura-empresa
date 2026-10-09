@@ -200,6 +200,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
 
 /* ===== Efeito neon (só no tema violeta) ===== */
 [data-tema="violeta"] body {
+  min-height: 100vh;
   background:
     radial-gradient(900px 500px at 10% -10%, rgba(var(--neon), .18), transparent 60%),
     radial-gradient(700px 500px at 110% 10%, rgba(var(--neon2), .10), transparent 60%),
@@ -309,3 +310,60 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--gold); outl
   font-variant-numeric: tabular-nums;
 }
 @media (prefers-reduced-motion: reduce) { .loader-txt { animation: none; } .loader-fill, .loader-pct { transition: none; } }
+
+/* ===== Modo diurno / noturno (botão no cabeçalho) ===== */
+.modo-btn {
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  border: 1px solid color-mix(in srgb, var(--header-ink) 25%, transparent); background: transparent;
+  color: var(--header-ink); cursor: pointer; transition: background .2s, box-shadow .2s;
+}
+.modo-btn:hover { background: color-mix(in srgb, var(--header-ink) 10%, transparent); }
+.modo-btn svg { width: 18px; height: 18px; }
+[data-tema="violeta"] .modo-btn { border-color: rgba(var(--neon), .45); }
+[data-tema="violeta"] .modo-btn:hover { box-shadow: 0 0 12px rgba(var(--neon), .6); }
+
+/* Forçar escuro nos temas laranja/dourado quando o utilizador escolhe "noturno" */
+:root:not([data-tema])[data-theme="dark"] {
+  --bg: #0e0e0e; --surface: #1a1a1a; --ink: #f1f1f1; --muted: #a6a19b;
+  --line: #2e2e2e; --accent: #f1f1f1; --accent-soft: #262626; --gold: #e0702e; --header-bg: #000000;
+}
+:root[data-tema="dourado"][data-theme="dark"] {
+  --bg: #161616; --surface: #1f1f1f; --ink: #ececec; --muted: #a0a0a5;
+  --line: #333; --accent: #e8e8e8; --accent-soft: #2a2a2a; --gold: #c9a874;
+  --header-bg: #1f1f1f; --header-ink: #ececec; --header-muted: #a0a0a5;
+}
+
+/* Violeta — modo diurno: mesmo violeta sobre fundo claro, brilho mais suave */
+:root[data-tema="violeta"][data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f1fc; --surface: #ffffff; --ink: #1b1230; --muted: #6b5f86; --line: #e2d8f3;
+  --accent: #8f2bff; --accent-soft: #efe7fb; --gold: #8f2bff; --grey: #7a6c98;
+  --header-bg: #ffffff; --header-ink: #1b1230; --header-muted: #7a6c98;
+  --danger: #d1245a; --ok: #178a5a;
+  --neon: 143, 43, 255; --neon2: 177, 77, 255;
+}
+[data-tema="violeta"][data-theme="light"] body {
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(var(--neon), .10), transparent 60%),
+    radial-gradient(700px 500px at 110% 10%, rgba(var(--neon2), .08), transparent 60%),
+    var(--bg);
+}
+[data-tema="violeta"][data-theme="light"] header.top { box-shadow: 0 0 12px rgba(var(--neon), .35), 0 0 30px rgba(var(--neon), .12); }
+[data-tema="violeta"][data-theme="light"] .logo { filter: drop-shadow(0 0 3px rgba(var(--neon), .45)); }
+[data-tema="violeta"][data-theme="light"] .brand b,
+[data-tema="violeta"][data-theme="light"] h1 { text-shadow: none; }
+[data-tema="violeta"][data-theme="light"] .card h2 .n,
+[data-tema="violeta"][data-theme="light"] .progress-top .pct { color: #8f2bff; text-shadow: 0 0 6px rgba(var(--neon), .35); }
+[data-tema="violeta"][data-theme="light"] .card,
+[data-tema="violeta"][data-theme="light"] .progress,
+[data-tema="violeta"][data-theme="light"] .table-wrap,
+[data-tema="violeta"][data-theme="light"] .hist-item {
+  border-color: rgba(var(--neon), .25); box-shadow: 0 0 0 1px rgba(var(--neon), .05), 0 6px 24px rgba(var(--neon), .10);
+}
+[data-tema="violeta"][data-theme="light"] input,
+[data-tema="violeta"][data-theme="light"] select,
+[data-tema="violeta"][data-theme="light"] textarea { background: #ffffff; border-color: #d9cdef; }
+[data-tema="violeta"][data-theme="light"] .demo { background: #efe4ff; color: #4b2a85; }
+[data-tema="violeta"][data-theme="light"] .tag.new { color: #7a22e0; }
+[data-tema="violeta"][data-theme="light"] .loader-txt { text-shadow: 0 0 6px rgba(var(--neon), .35); }
+[data-tema="violeta"][data-theme="light"] .loader-bar { box-shadow: 0 0 6px rgba(var(--neon), .5), 0 0 16px rgba(var(--neon), .2), inset 0 0 6px rgba(var(--neon), .2); }

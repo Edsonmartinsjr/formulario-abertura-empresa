@@ -242,6 +242,7 @@
     $$('[data-ph]').forEach(el => el.placeholder = t(el.dataset.ph));
     $$('select[data-opts]').forEach(popularOpcoes);
     $$('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    DNA.rotularModo();
     if (!$('#app').hidden) $('#lead').textContent = cliente ? t('leadCliente', { n: cliente }) : t('leadGeral');
     renumber();
     atualizarBotoes();
